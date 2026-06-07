@@ -1,0 +1,130 @@
+import type { FastifyInstance } from "fastify";
+import { z } from "zod";
+import { getSupabaseAdminClient } from "../../../providers/supabase/supabase-admin.client.js";
+import { GeminiClient } from "../../../providers/gemini/gemini.client.js";
+import { ClimateScoreService } from "../../climate/climate-score.service.js";
+import { ClimateRepository } from "../../climate/climate.repo.js";
+import { ForecastsService } from "../../forecasts/forecasts.service.js";
+import { ForecastsRepository } from "../../forecasts/forecasts.repo.js";
+import { MissionsService } from "../../missions/missions.service.js";
+import { MissionsRepository } from "../../missions/missions.repo.js";
+import { RecommendationAgentService } from "../../agents/recommendations/recommendation-agent.service.js";
+import { RecommendationRulesEngine } from "../../agents/recommendations/recommendation-rules.engine.js";
+import { authMiddleware } from "../middleware/auth.middleware.js";
+
+import { MemoryService } from "../../agents/rit/memory.service.js";
+import { RitToolsService } from "../../agents/rit/rit-tools.service.js";
+import { ContextAssemblerService } from "../../agents/rit/context-assembler.service.js";
+import { ResponseSynthesisService } from "../../agents/rit/response-synthesis.service.js";
+import { RitAgentService } from "../../agents/rit/rit-agent.service.js";
+import { RitInsightService } from "../../agents/rit/rit-insight.service.js";
+
+const chatSchema = z.object({
+  message: z.string().min(1),
+  localityId: z.string().uuid(),
+  conversationId: z.string().uuid().optional(),
+});
+
+export async function registerRitRoutes(app: FastifyInstance): Promise<void> {
+  const supabase = getSupabaseAdminClient();
+  const gemini = new GeminiClient();
+
+  const climateRepo = new ClimateRepository(supabase);
+  const climateScoreService = new ClimateScoreService(climateRepo);
+  const forecastsRepo = new ForecastsRepository(supabase);
+  const forecastsService = new ForecastsService(forecastsRepo);
+  const missionsRepo = new MissionsRepository(supabase);
+  const missionsService = new MissionsService(missionsRepo);
+  const recommendationRulesEngine = new RecommendationRulesEngine();
+  const recommendationAgentService = new RecommendationAgentService(
+    climateScoreService,
+    missionsService,
+    recommendationRulesEngine,
+    gemini
+  );
+
+  const memoryService = new MemoryService(supabase);
+  const ritTools = new RitToolsService(
+    supabase,
+    climateScoreService,
+    forecastsService,
+    missionsService,
+    recommendationAgentService
+  );
+  const contextAssembler = new ContextAssemblerService(ritTools, memoryService);
+  const synthesisService = new ResponseSynthesisService(gemini);
+  const ritInsightService = new RitInsightService(supabase);
+  const ritAgent = new RitAgentService(memoryService, contextAssembler, synthesisService);
+
+  app.register(async (protectedApp) => {
+    protectedApp.addHook("preHandler", authMiddleware);
+
+    protectedApp.post("/chat", {
+      bodyLimit: 512000, // 500KB
+      config: { rateLimit: { max: 15, timeWindow: "1 minute" } }
+    }, async (request, reply) => {
+      const body = chatSchema.parse(request.body);
+      const userId = request.user!.id;
+      return await ritAgent.processQuery({
+        userId,
+        localityId: body.localityId,
+        message: body.message,
+        conversationId: body.conversationId
+      });
+    });
+
+    protectedApp.post("/chat-with-image", async (request, reply) => {
+      // Future scaffold for multi-modal context (e.g. lake analysis, vegetation discussion)
+      // Expects multipart/form-data with image and text
+      return {
+        message: {
+          role: "assistant",
+          content: "Image processing is currently offline. I can still help you with text queries!"
+        }
+      };
+    });
+
+    protectedApp.get("/insights", async (request, reply) => {
+      const userId = request.user!.id;
+      const query = z.object({ localityId: z.string().uuid() }).parse(request.query);
+      const insights = await ritInsightService.getActiveInsights(query.localityId, userId);
+      return { data: insights };
+    });
+
+    protectedApp.get("/conversations", async (request, reply) => {
+      const userId = request.user!.id;
+      const { data, error } = await supabase
+        .from("rit_conversations")
+        .select("*")
+        .eq("user_id", userId)
+        .order("updated_at", { ascending: false });
+
+      if (error) throw new Error(error.message);
+      return { data };
+    });
+
+    protectedApp.get("/conversations/:id", async (request, reply) => {
+      const userId = request.user!.id;
+      const { id } = request.params as { id: string };
+
+      const { data: conversation, error: convError } = await supabase
+        .from("rit_conversations")
+        .select("*")
+        .eq("id", id)
+        .eq("user_id", userId)
+        .single();
+
+      if (convError) throw new Error(convError.message);
+
+      const { data: messages, error: msgError } = await supabase
+        .from("rit_messages")
+        .select("*")
+        .eq("conversation_id", id)
+        .order("created_at", { ascending: true });
+
+      if (msgError) throw new Error(msgError.message);
+
+      return { conversation, messages };
+    });
+  });
+}
