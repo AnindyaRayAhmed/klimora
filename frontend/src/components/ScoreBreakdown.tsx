@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ChevronDown, Calculator } from "lucide-react";
 import { getScoreBreakdown } from "@/lib/api/adapters";
-import type { Locality } from "@/lib/api/adapters";
+import type { Locality } from "@/lib/ui-constants";
 import { ConfidenceBadge } from "./ConfidenceBadge";
 
 export function ScoreBreakdown({ locality }: { locality: Locality }) {

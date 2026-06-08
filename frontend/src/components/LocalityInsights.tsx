@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { MapPin, Sparkles, ArrowRight, CheckCircle2 } from "lucide-react";
-import type { Locality } from "@/lib/api/adapters";
+import type { Locality } from "@/lib/ui-constants";
 
 export function LocalityInsights({ locality }: { locality: Locality }) {
   return (

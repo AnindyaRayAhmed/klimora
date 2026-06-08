@@ -1,5 +1,5 @@
 import { TrendingUp, TrendingDown, Minus, Flame, Wind, Trees, CloudRain } from "lucide-react";
-import type { Locality } from "@/lib/api/adapters";
+import type { Locality } from "@/lib/ui-constants";
 import { ConfidenceBadge } from "./ConfidenceBadge";
 
 function scoreColor(score: number) {

@@ -1,6 +1,6 @@
 import { Flame, CloudRain, Wind, Clock } from "lucide-react";
 import { getLocalForecast } from "@/lib/api/adapters";
-import type { Locality } from "@/lib/api/adapters";
+import type { Locality } from "@/lib/ui-constants";
 import { ConfidenceBadge } from "./ConfidenceBadge";
 
 const iconMap = { heat: Flame, rainfall: CloudRain, aqi: Wind } as const;

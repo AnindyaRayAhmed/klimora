@@ -4,7 +4,7 @@ import { Trophy, Trees, Users, Target, TrendingUp, TrendingDown, Minus, MapPin, 
 import { ResponsiveContainer, LineChart, Line, AreaChart, Area, BarChart, Bar, Tooltip, XAxis, YAxis } from "recharts";
 import { useCommunity } from "@/hooks/use-community";
 import { useDashboardIntelligence } from "@/hooks/use-climate";
-import { type Ranking } from "@/lib/api/adapters";
+import { type Ranking } from "@/lib/ui-constants";
 import { temperatureTrend, vegetationTrend, aqiTrend, rainfallTrend, municipalityRankings, cityRankings, wards } from "@/lib/ui-constants";
 
 export const Route = createFileRoute("/community")({
