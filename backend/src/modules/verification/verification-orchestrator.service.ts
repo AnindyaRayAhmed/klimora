@@ -101,19 +101,20 @@ export class VerificationOrchestratorService {
         reason: decision.reason
       };
 
-    } catch (e: any) {
+    } catch (e: unknown) {
       // Handle failure (e.g. Gemini error)
       await this.supabase
         .from("mission_submissions")
         .update({ status: "manual_review" })
         .eq("id", submissionId);
       
+      const errorMessage = e instanceof Error ? e.message : "Unknown error";
       return {
         submissionId,
         status: "manual_review",
         confidence: 0,
         ruleResults: [],
-        reason: `Error during processing: ${e.message}`
+        reason: `Error during processing: ${errorMessage}`
       };
     }
   }

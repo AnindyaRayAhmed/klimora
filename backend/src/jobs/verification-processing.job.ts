@@ -45,7 +45,7 @@ export async function runVerificationProcessingJob() {
       
       const result = await orchestrator.processSubmission(sub.id);
       console.log(`Finished processing ${sub.id}: ${result.status} (confidence: ${result.confidence})`);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(`Error processing submission ${sub.id}:`, e);
       // Mark for manual review on hard failure
       await supabase.from("mission_submissions").update({ status: "manual_review" }).eq("id", sub.id);

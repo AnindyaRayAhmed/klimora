@@ -1,23 +1,23 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { getSupabaseAdminClient } from "../../../providers/supabase/supabase-admin.client.js";
-import { GeminiClient } from "../../../providers/gemini/gemini.client.js";
-import { ClimateScoreService } from "../../climate/climate-score.service.js";
-import { ClimateRepository } from "../../climate/climate.repo.js";
-import { ForecastsService } from "../../forecasts/forecasts.service.js";
-import { ForecastsRepository } from "../../forecasts/forecasts.repo.js";
-import { MissionsService } from "../../missions/missions.service.js";
-import { MissionsRepository } from "../../missions/missions.repo.js";
-import { RecommendationAgentService } from "../../agents/recommendations/recommendation-agent.service.js";
-import { RecommendationRulesEngine } from "../../agents/recommendations/recommendation-rules.engine.js";
+import { getSupabaseAdminClient } from "../../providers/supabase/supabase-admin.client.js";
+import { GeminiClient } from "../../providers/gemini/gemini.client.js";
+import { ClimateScoreService } from "../../modules/climate/climate-score.service.js";
+import { ClimateRepository } from "../../modules/climate/climate.repo.js";
+import { ForecastsService } from "../../modules/forecasts/forecasts.service.js";
+import { ForecastsRepository } from "../../modules/forecasts/forecasts.repo.js";
+import { MissionsService } from "../../modules/missions/missions.service.js";
+import { MissionsRepository } from "../../modules/missions/missions.repo.js";
+import { RecommendationAgentService } from "../../modules/agents/recommendations/recommendation-agent.service.js";
+import { RecommendationRulesEngine } from "../../modules/agents/recommendations/recommendation-rules.engine.js";
 import { authMiddleware } from "../middleware/auth.middleware.js";
 
-import { MemoryService } from "../../agents/rit/memory.service.js";
-import { RitToolsService } from "../../agents/rit/rit-tools.service.js";
-import { ContextAssemblerService } from "../../agents/rit/context-assembler.service.js";
-import { ResponseSynthesisService } from "../../agents/rit/response-synthesis.service.js";
-import { RitAgentService } from "../../agents/rit/rit-agent.service.js";
-import { RitInsightService } from "../../agents/rit/rit-insight.service.js";
+import { MemoryService } from "../../modules/agents/rit/memory.service.js";
+import { RitToolsService } from "../../modules/agents/rit/rit-tools.service.js";
+import { ContextAssemblerService } from "../../modules/agents/rit/context-assembler.service.js";
+import { ResponseSynthesisService } from "../../modules/agents/rit/response-synthesis.service.js";
+import { RitAgentService } from "../../modules/agents/rit/rit-agent.service.js";
+import { RitInsightService } from "../../modules/agents/rit/rit-insight.service.js";
 
 const chatSchema = z.object({
   message: z.string().min(1),

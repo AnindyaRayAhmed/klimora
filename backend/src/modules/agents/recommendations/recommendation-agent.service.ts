@@ -41,7 +41,7 @@ export class RecommendationAgentService {
     for (const rec of topRecommendations) {
       const prompt = `
       You are an expert climate action advisor. 
-      Given the following climate conditions for a locality (score: ${context.overallScore}, trend: ${context.trend}, temp: ${context.factors.temperature_c.value}°C, AQI: ${context.factors.aqi.value}, NDVI: ${context.factors.ndvi.value}, Rainfall: ${context.factors.rainfall_mm.value}mm):
+      Given the following climate conditions for a locality (score: ${context.overallScore}, trend: ${context.trend}, temp: ${context.factors['temperature_c']?.value ?? 30}°C, AQI: ${context.factors['aqi']?.value ?? 50}, NDVI: ${context.factors['ndvi']?.value ?? 0.5}, Rainfall: ${context.factors['rainfall_mm']?.value ?? 50}mm):
       Explain in exactly one short, encouraging sentence why the mission "${rec.missionTitle}" is recommended. Do not use quotes or list formatting.
     `;
       try {
