@@ -39,15 +39,15 @@ export class RecommendationAgentService {
     // 4. Generate LLM explanations for the top 3 recommendations
     const topRecommendations = recommendations.slice(0, 3);
     for (const rec of topRecommendations) {
-      const prompt = \`
-        You are an expert climate action advisor. 
-        Given the following climate conditions for a locality (score: \${context.overallScore}, trend: \${context.trend}, temp: \${context.factors.temperature_c.value}°C, AQI: \${context.factors.aqi.value}, NDVI: \${context.factors.ndvi.value}, Rainfall: \${context.factors.rainfall_mm.value}mm):
-        Explain in exactly one short, encouraging sentence why the mission "\${rec.missionTitle}" is recommended. Do not use quotes or list formatting.
-      \`;
+      const prompt = `
+      You are an expert climate action advisor. 
+      Given the following climate conditions for a locality (score: ${context.overallScore}, trend: ${context.trend}, temp: ${context.factors.temperature_c.value}°C, AQI: ${context.factors.aqi.value}, NDVI: ${context.factors.ndvi.value}, Rainfall: ${context.factors.rainfall_mm.value}mm):
+      Explain in exactly one short, encouraging sentence why the mission "${rec.missionTitle}" is recommended. Do not use quotes or list formatting.
+    `;
       try {
         rec.explanation = await this.gemini.generateText(prompt);
       } catch (e) {
-        rec.explanation = \`Recommended to improve climate resilience.\`;
+        rec.explanation = `Recommended to improve climate resilience.`;
       }
     }
 

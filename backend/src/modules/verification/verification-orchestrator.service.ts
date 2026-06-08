@@ -89,7 +89,7 @@ export class VerificationOrchestratorService {
           submission.user_id,
           submissionId,
           missionPoints,
-          \`Mission verified: \${missionSlug}\`
+          `Mission verified: ${missionSlug}`
         );
       }
 
@@ -113,7 +113,7 @@ export class VerificationOrchestratorService {
         status: "manual_review",
         confidence: 0,
         ruleResults: [],
-        reason: \`Error during processing: \${e.message}\`
+        reason: `Error during processing: ${e.message}`
       };
     }
   }
