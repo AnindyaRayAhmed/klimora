@@ -67,8 +67,11 @@ export class OpenWeatherClient {
     const data = await this.fetchOpenWeather<AirQualityResponse>("/air_pollution", { lat: lat.toString(), lon: lon.toString() });
     if (!data || !data.list || data.list.length === 0) return null;
     
+    const firstItem = data.list[0];
+    if (!firstItem) return null;
+    
     // Map OpenWeather AQI (1-5) to roughly US EPA standard for the formula (0-500)
-    const rawAqi = data.list[0].main.aqi;
+    const rawAqi = firstItem.main.aqi;
     const aqiMap: Record<number, number> = { 1: 25, 2: 75, 3: 125, 4: 175, 5: 250 };
     return { aqiValue: aqiMap[rawAqi] || 50 };
   }
