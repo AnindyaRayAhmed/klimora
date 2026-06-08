@@ -48,7 +48,7 @@ export class PlanetClient {
           throw new Error(`OAuth server returned status ${response.status}`);
         }
 
-        const data = await response.json();
+        const data = (await response.json()) as { access_token?: string; expires_in?: number };
         const token = data?.access_token;
         const expiresIn = data?.expires_in ?? 3600; // default to 1 hour
 
@@ -148,7 +148,7 @@ function evaluatePixel(samples) {
         return { value: 0.65, source: "sentinel_hub_fallback", observedAt: new Date().toISOString() };
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as { data?: any[] };
       
       const meanNdvi = data?.data?.[0]?.outputs?.default?.bands?.B0?.stats?.mean;
       if (meanNdvi !== undefined && meanNdvi !== null && !isNaN(Number(meanNdvi))) {

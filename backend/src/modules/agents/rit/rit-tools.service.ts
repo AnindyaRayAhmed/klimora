@@ -159,7 +159,8 @@ export class RitToolsService {
     
     const categoryCounts: Record<string, number> = {};
     for (const sub of submissions) {
-      const cat = sub.missions?.category;
+      const missionsData = sub.missions as any;
+      const cat = Array.isArray(missionsData) ? missionsData[0]?.category : missionsData?.category;
       if (cat) {
         categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
       }

@@ -8,7 +8,7 @@ export class OpenWeatherClient {
     this.apiKey = env.openWeatherApiKey || "";
   }
 
-  private async fetchOpenWeather(endpoint: string, params: Record<string, string>) {
+  private async fetchOpenWeather<T = any>(endpoint: string, params: Record<string, string>): Promise<T | null> {
     if (!this.apiKey) {
       console.warn("OpenWeather API key is missing.");
       return null;
@@ -25,7 +25,7 @@ export class OpenWeatherClient {
         console.error(`OpenWeather API error: ${response.status}`);
         return null;
       }
-      return await response.json();
+      return (await response.json()) as T;
     } catch (error) {
       console.error("OpenWeather network error:", error);
       return null;
@@ -33,7 +33,11 @@ export class OpenWeatherClient {
   }
 
   async getCurrentWeather(lat: number, lon: number) {
-    const data = await this.fetchOpenWeather("/weather", { lat: lat.toString(), lon: lon.toString(), units: "metric" });
+    interface CurrentWeatherResponse {
+      main?: { temp: number; feels_like: number; humidity: number };
+      rain?: { "1h"?: number; "3h"?: number };
+    }
+    const data = await this.fetchOpenWeather<CurrentWeatherResponse>("/weather", { lat: lat.toString(), lon: lon.toString(), units: "metric" });
     if (!data) return null;
     return {
       tempC: data.main?.temp,
@@ -44,11 +48,23 @@ export class OpenWeatherClient {
   }
 
   async getForecast(lat: number, lon: number) {
-    return this.fetchOpenWeather("/forecast", { lat: lat.toString(), lon: lon.toString(), units: "metric" });
+    interface ForecastResponse {
+      list?: Array<{
+        dt: number;
+        main?: { temp: number; feels_like: number };
+        rain?: { "3h"?: number };
+      }>;
+    }
+    return this.fetchOpenWeather<ForecastResponse>("/forecast", { lat: lat.toString(), lon: lon.toString(), units: "metric" });
   }
 
   async getAirQuality(lat: number, lon: number) {
-    const data = await this.fetchOpenWeather("/air_pollution", { lat: lat.toString(), lon: lon.toString() });
+    interface AirQualityResponse {
+      list?: Array<{
+        main: { aqi: number };
+      }>;
+    }
+    const data = await this.fetchOpenWeather<AirQualityResponse>("/air_pollution", { lat: lat.toString(), lon: lon.toString() });
     if (!data || !data.list || data.list.length === 0) return null;
     
     // Map OpenWeather AQI (1-5) to roughly US EPA standard for the formula (0-500)
