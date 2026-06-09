@@ -36,10 +36,18 @@ export async function buildApp(): Promise<FastifyInstance> {
   app.setErrorHandler(errorMiddleware);
 
   const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
-  
+
   await app.register(cors, {
-    origin: frontendUrl === "*" ? true : [frontendUrl, "http://localhost:5173"],
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    origin: (origin, cb) => {
+      if (!origin) {
+        cb(null, true);
+        return;
+      }
+      const allowed = origin.endsWith('.vercel.app') || origin.includes('localhost');
+      cb(null, allowed);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ["Content-Type", "Authorization"],
   });
 
