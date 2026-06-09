@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
 import { z } from "zod";
-import { Send, Sparkles, Thermometer, Trees, CloudRain, Wind, Target, ChevronRight, MapPin, Clock, Database } from "lucide-react";
+import { Send, Sparkles, Thermometer, Trees, CloudRain, Wind, Target, ChevronRight, MapPin, Clock, Database, Bell } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useAppStore } from "@/store";
 import { useDashboardIntelligence } from "@/hooks/use-climate";
