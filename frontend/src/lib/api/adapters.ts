@@ -4,7 +4,7 @@ const frontendLocalityMap: Record<string, Partial<Locality>> = {
   'indiranagar': mockLocalities.find(l => l.id === 'indiranagar')!,
   'koramangala': mockLocalities.find(l => l.id === 'koramangala')!,
   'jayanagar': mockLocalities.find(l => l.id === 'jayanagar')!,
-  'hsr-layout': mockLocalities.find(l => l.id === 'hsr')!,
+  'hsr': mockLocalities.find(l => l.id === 'hsr')!,
   'whitefield': mockLocalities.find(l => l.id === 'whitefield')!,
 };
 
@@ -13,7 +13,7 @@ export function adaptClimateScoreToLocality(localityRaw: any, scoreRaw: any): Lo
   
   return {
     ...base,
-    id: localityRaw.id,
+    id: localityRaw.slug,
     name: localityRaw.name,
     city: localityRaw.city,
     climateScore: scoreRaw.score,

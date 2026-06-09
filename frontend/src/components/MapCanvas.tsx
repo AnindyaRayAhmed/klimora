@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Crosshair, Plus, Minus, Layers, MapPin } from "lucide-react";
 import { localities, type LocalityId } from "@/lib/ui-constants";
 
@@ -71,13 +71,65 @@ const hotspotsByLayer: Record<ClimateLayer, { left: string; top: string; size: n
 
 export function MapCanvas({ layer, selectedId, onLocationClick, localitiesOverride }: Props) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const mapRef = useRef<HTMLDivElement>(null);
+
   const config = layerConfig[layer] || layerConfig["climate"];
   const color = config.color;
   const cells = buildCells(layerSeeds[layer] ?? layerSeeds["climate"]);
   const hotspots = hotspotsByLayer[layer] || hotspotsByLayer["climate"];
 
+  useEffect(() => {
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    if (!apiKey) {
+      console.warn("VITE_GOOGLE_MAPS_API_KEY is missing. Basemap will not load.");
+      return;
+    }
+
+    const initMap = () => {
+      if (!mapRef.current || !(window as any).google) return;
+      new (window as any).google.maps.Map(mapRef.current, {
+        center: { lat: 12.9716, lng: 77.5946 }, // Bengaluru center
+        zoom: 11.5,
+        disableDefaultUI: true,
+        backgroundColor: '#0a1f1c', // Klimora dark background
+        styles: [
+          { elementType: 'geometry', stylers: [{ color: '#101c1a' }] },
+          { elementType: 'labels.text.stroke', stylers: [{ color: '#101c1a' }] },
+          { elementType: 'labels.text.fill', stylers: [{ color: '#4d685f' }] },
+          { featureType: 'administrative.locality', elementType: 'labels.text.fill', stylers: [{ color: '#688c80' }] },
+          { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0b1615' }] },
+          { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#31443f' }] },
+          { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#162b27' }] },
+          { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#101c1a' }] },
+        ]
+      });
+    };
+
+    if ((window as any).google?.maps) {
+      initMap();
+    } else {
+      if (!document.querySelector('script[src*="maps.googleapis.com"]')) {
+        const script = document.createElement("script");
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+        script.async = true;
+        script.defer = true;
+        script.onload = initMap;
+        document.head.appendChild(script);
+      } else {
+        const check = setInterval(() => {
+          if ((window as any).google?.maps) {
+            clearInterval(check);
+            initMap();
+          }
+        }, 100);
+      }
+    }
+  }, []);
+
   return (
     <div className="relative h-full w-full overflow-hidden bg-[oklch(0.13_0.025_225)]">
+      {/* Real Google Maps Basemap */}
+      <div ref={mapRef} className="absolute inset-0 h-full w-full z-0 opacity-30 mix-blend-luminosity" />
       {/* Base map tiles — abstract topo grid */}
       <svg className="absolute inset-0 h-full w-full opacity-[0.22]" xmlns="http://www.w3.org/2000/svg">
         <defs>

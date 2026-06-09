@@ -30,11 +30,13 @@ function ProfilePage() {
   const { user, isLoading } = useAuth();
   const { profile: u, missionHistory, verificationQueue, loading } = useProfile();
   
-  if (isLoading || loading || !u) return <div className="min-h-screen flex items-center justify-center">Loading profile...</div>;
+  if (isLoading || loading) return <div className="min-h-screen flex items-center justify-center">Loading profile...</div>;
 
   if (!user) {
     return <Navigate to="/login" replace />;
   }
+
+  if (!u) return <div className="min-h-screen flex items-center justify-center">Loading profile...</div>;
 
   const progress = (u.points / u.nextLevelAt) * 100;
 

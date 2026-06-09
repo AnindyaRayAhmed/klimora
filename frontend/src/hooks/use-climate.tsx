@@ -32,12 +32,12 @@ export function useDashboardIntelligence() {
   useEffect(() => {
     if (!selectedLocalityId || localitiesRaw.length === 0) return;
 
-    const locRaw = localitiesRaw.find(l => l.id === selectedLocalityId) || localitiesRaw[0];
+    const locRaw = localitiesRaw.find(l => l.slug === selectedLocalityId) || localitiesRaw[0];
     
     const fetchScore = async () => {
       setIsHydratingScore(true);
       try {
-        const scoreRes = await climateClient.getLocalityScore(locRaw.id);
+        const scoreRes = await climateClient.getLocalityScore(locRaw.slug);
         const frontendObj = adaptClimateScoreToLocality(locRaw, scoreRes.data);
         setActiveLocalityData(frontendObj);
         
