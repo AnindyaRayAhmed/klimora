@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { localitiesClient, climateClient } from '../lib/api/domains.client';
 import { adaptClimateScoreToLocality } from '../lib/api/adapters';
 import { useAppStore } from '../store';
-import { type Locality } from '../lib/ui-constants';
+import { type Locality, defaultLocality } from '../lib/ui-constants';
 
 export function useDashboardIntelligence() {
   const { selectedLocalityId, setSelectedLocalityId } = useAppStore();
