@@ -12,17 +12,20 @@ import { authMiddleware } from "../middleware/auth.middleware.js";
 import { ForbiddenError } from "../../shared/errors.js";
 
 const querySchema = z.object({
-  localityId: z.string().uuid(),
+  localityId: z.string(),
   userId: z.string().uuid().optional(),
 });
 
 const localityParamSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string(),
 });
 
 const userParamSchema = z.object({
   id: z.string().uuid(),
 });
+
+import { LocalitiesRepository } from "../../modules/localities/localities.repo.js";
+import { LocalitiesService } from "../../modules/localities/localities.service.js";
 
 export async function registerRecommendationRoutes(app: FastifyInstance): Promise<void> {
   const supabase = getSupabaseAdminClient();
@@ -32,6 +35,7 @@ export async function registerRecommendationRoutes(app: FastifyInstance): Promis
   const missionsService = new MissionsService(missionsRepo);
   const rulesEngine = new RecommendationRulesEngine();
   const geminiClient = new GeminiClient();
+  const localitiesService = new LocalitiesService(new LocalitiesRepository(supabase));
   
   const recommendationAgent = new RecommendationAgentService(
     climateScoreService,
@@ -42,13 +46,15 @@ export async function registerRecommendationRoutes(app: FastifyInstance): Promis
 
   app.get("/", async (request, reply) => {
     const query = querySchema.parse(request.query);
-    const data = await recommendationAgent.getRecommendations(query.localityId, query.userId);
+    const locality = await localitiesService.getLocalityBySlugOrId(query.localityId);
+    const data = await recommendationAgent.getRecommendations(locality.id, query.userId);
     return { data };
   });
 
   app.get("/locality/:id", async (request, reply) => {
     const params = localityParamSchema.parse(request.params);
-    const data = await recommendationAgent.getRecommendations(params.id);
+    const locality = await localitiesService.getLocalityBySlugOrId(params.id);
+    const data = await recommendationAgent.getRecommendations(locality.id);
     return { data };
   });
 
@@ -63,8 +69,9 @@ export async function registerRecommendationRoutes(app: FastifyInstance): Promis
       }
 
       // User route usually needs a localityId, let's assume it's passed in query
-      const query = z.object({ localityId: z.string().uuid() }).parse(request.query);
-      const data = await recommendationAgent.getRecommendations(query.localityId, params.id);
+      const query = z.object({ localityId: z.string() }).parse(request.query);
+      const locality = await localitiesService.getLocalityBySlugOrId(query.localityId);
+      const data = await recommendationAgent.getRecommendations(locality.id, params.id);
       return { data };
     });
   });

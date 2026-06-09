@@ -20,6 +20,19 @@ export class LocalitiesService {
     return this.toDto(locality);
   }
 
+  async getLocalityBySlugOrId(slugOrId: string): Promise<LocalityDto> {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slugOrId);
+    const locality = isUuid 
+      ? await this.localitiesRepository.findById(slugOrId)
+      : await this.localitiesRepository.findBySlug(slugOrId);
+
+    if (!locality) {
+      throw new NotFoundError(`Locality not found: ${slugOrId}`);
+    }
+
+    return this.toDto(locality);
+  }
+
   private toDto(locality: LocalityDto): LocalityDto {
     return {
       id: locality.id,

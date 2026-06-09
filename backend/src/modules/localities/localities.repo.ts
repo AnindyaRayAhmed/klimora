@@ -46,6 +46,20 @@ export class LocalitiesRepository {
     return data ? this.toDomain(data as LocalityRow) : null;
   }
 
+  async findBySlug(slug: string): Promise<Locality | null> {
+    const { data, error } = await this.supabase
+      .from("localities")
+      .select("id, slug, name, city, state, country, latitude, longitude, description, created_at")
+      .eq("slug", slug)
+      .maybeSingle();
+
+    if (error) {
+      throw new UpstreamDataError(`Failed to load locality by slug: ${error.message}`);
+    }
+
+    return data ? this.toDomain(data as LocalityRow) : null;
+  }
+
   private toDomain(row: LocalityRow): Locality {
     return {
       id: row.id,

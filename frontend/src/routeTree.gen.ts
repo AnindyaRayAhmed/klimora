@@ -15,6 +15,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as MissionsRouteImport } from './routes/missions'
 import { Route as CommunityRouteImport } from './routes/community'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LoginRouteImport } from './routes/login'
 
 const SubmitRoute = SubmitRouteImport.update({
   id: '/submit',
@@ -46,10 +47,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/community': typeof CommunityRoute
+  '/login': typeof LoginRoute
   '/missions': typeof MissionsRoute
   '/profile': typeof ProfileRoute
   '/rit': typeof RitRoute
@@ -58,6 +65,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/community': typeof CommunityRoute
+  '/login': typeof LoginRoute
   '/missions': typeof MissionsRoute
   '/profile': typeof ProfileRoute
   '/rit': typeof RitRoute
@@ -67,6 +75,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/community': typeof CommunityRoute
+  '/login': typeof LoginRoute
   '/missions': typeof MissionsRoute
   '/profile': typeof ProfileRoute
   '/rit': typeof RitRoute
@@ -74,13 +83,14 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/community' | '/missions' | '/profile' | '/rit' | '/submit'
+  fullPaths: '/' | '/community' | '/login' | '/missions' | '/profile' | '/rit' | '/submit'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/community' | '/missions' | '/profile' | '/rit' | '/submit'
+  to: '/' | '/community' | '/login' | '/missions' | '/profile' | '/rit' | '/submit'
   id:
     | '__root__'
     | '/'
     | '/community'
+    | '/login'
     | '/missions'
     | '/profile'
     | '/rit'
@@ -90,6 +100,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CommunityRoute: typeof CommunityRoute
+  LoginRoute: typeof LoginRoute
   MissionsRoute: typeof MissionsRoute
   ProfileRoute: typeof ProfileRoute
   RitRoute: typeof RitRoute
@@ -133,6 +144,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CommunityRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -146,6 +164,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CommunityRoute: CommunityRoute,
+  LoginRoute: LoginRoute,
   MissionsRoute: MissionsRoute,
   ProfileRoute: ProfileRoute,
   RitRoute: RitRoute,

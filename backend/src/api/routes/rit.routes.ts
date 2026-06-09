@@ -11,6 +11,8 @@ import { MissionsRepository } from "../../modules/missions/missions.repo.js";
 import { RecommendationAgentService } from "../../modules/agents/recommendations/recommendation-agent.service.js";
 import { RecommendationRulesEngine } from "../../modules/agents/recommendations/recommendation-rules.engine.js";
 import { authMiddleware } from "../middleware/auth.middleware.js";
+import { LocalitiesRepository } from "../../modules/localities/localities.repo.js";
+import { LocalitiesService } from "../../modules/localities/localities.service.js";
 
 import { MemoryService } from "../../modules/agents/rit/memory.service.js";
 import { RitToolsService } from "../../modules/agents/rit/rit-tools.service.js";
@@ -21,7 +23,7 @@ import { RitInsightService } from "../../modules/agents/rit/rit-insight.service.
 
 const chatSchema = z.object({
   message: z.string().min(1),
-  localityId: z.string().uuid(),
+  localityId: z.string(),
   conversationId: z.string().uuid().optional(),
 });
 
@@ -56,6 +58,8 @@ export async function registerRitRoutes(app: FastifyInstance): Promise<void> {
   const ritInsightService = new RitInsightService(supabase);
   const ritAgent = new RitAgentService(memoryService, contextAssembler, synthesisService);
 
+  const localitiesService = new LocalitiesService(new LocalitiesRepository(supabase));
+
   app.register(async (protectedApp) => {
     protectedApp.addHook("preHandler", authMiddleware);
 
@@ -65,9 +69,10 @@ export async function registerRitRoutes(app: FastifyInstance): Promise<void> {
     }, async (request, reply) => {
       const body = chatSchema.parse(request.body);
       const userId = request.user!.id;
+      const locality = await localitiesService.getLocalityBySlugOrId(body.localityId);
       return await ritAgent.processQuery({
         userId,
-        localityId: body.localityId,
+        localityId: locality.id,
         message: body.message,
         conversationId: body.conversationId
       });
@@ -86,8 +91,9 @@ export async function registerRitRoutes(app: FastifyInstance): Promise<void> {
 
     protectedApp.get("/insights", async (request, reply) => {
       const userId = request.user!.id;
-      const query = z.object({ localityId: z.string().uuid() }).parse(request.query);
-      const insights = await ritInsightService.getActiveInsights(query.localityId, userId);
+      const query = z.object({ localityId: z.string() }).parse(request.query);
+      const locality = await localitiesService.getLocalityBySlugOrId(query.localityId);
+      const insights = await ritInsightService.getActiveInsights(locality.id, userId);
       return { data: insights };
     });
 

@@ -6,7 +6,7 @@ import { LocalitiesService } from "../../modules/localities/localities.service.j
 import { getSupabaseAdminClient } from "../../providers/supabase/supabase-admin.client.js";
 
 const localityParamsSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string(),
 });
 
 export async function registerLocalityRoutes(app: FastifyInstance): Promise<void> {
@@ -24,7 +24,7 @@ export async function registerLocalityRoutes(app: FastifyInstance): Promise<void
     const params = localityParamsSchema.parse(request.params);
 
     return {
-      data: await service.getLocality(params.id),
+      data: await service.getLocalityBySlugOrId(params.id),
     };
   });
 }

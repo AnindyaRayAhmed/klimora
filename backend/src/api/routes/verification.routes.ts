@@ -7,7 +7,7 @@ import { ForbiddenError } from "../../shared/errors.js";
 // userId is removed from the request body as it comes from the authenticated context
 const submitSchema = z.object({
   missionId: z.string().uuid(),
-  localityId: z.string().uuid(),
+  localityId: z.string(),
   mediaBucket: z.string().default("mission-evidence"),
   mediaPath: z.string().min(1),
   mediaType: z.enum(["image", "video"]).default("image"),
@@ -22,8 +22,12 @@ const submissionIdParamSchema = z.object({
   submissionId: z.string().uuid(),
 });
 
+import { LocalitiesRepository } from "../../modules/localities/localities.repo.js";
+import { LocalitiesService } from "../../modules/localities/localities.service.js";
+
 export async function registerVerificationRoutes(app: FastifyInstance): Promise<void> {
   const supabase = getSupabaseAdminClient();
+  const localitiesService = new LocalitiesService(new LocalitiesRepository(supabase));
 
   app.register(async (protectedApp) => {
     protectedApp.addHook("preHandler", authMiddleware);
@@ -39,13 +43,15 @@ export async function registerVerificationRoutes(app: FastifyInstance): Promise<
       if (!body.mediaPath.startsWith(`${userId}/`)) {
         throw new ForbiddenError("Media path must belong to your user namespace.");
       }
+
+      const locality = await localitiesService.getLocalityBySlugOrId(body.localityId);
       
       const { data, error } = await supabase
         .from("mission_submissions")
         .insert({
           user_id: userId,
           mission_id: body.missionId,
-          locality_id: body.localityId,
+          locality_id: locality.id,
           media_bucket: body.mediaBucket,
           media_path: body.mediaPath,
           media_type: body.mediaType,
