@@ -72,6 +72,7 @@ const hotspotsByLayer: Record<ClimateLayer, { left: string; top: string; size: n
 export function MapCanvas({ layer, selectedId, onLocationClick, localitiesOverride }: Props) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<any>(null);
 
   const config = layerConfig[layer] || layerConfig["climate"];
   const color = config.color;
@@ -87,7 +88,7 @@ export function MapCanvas({ layer, selectedId, onLocationClick, localitiesOverri
 
     const initMap = () => {
       if (!mapRef.current || !(window as any).google) return;
-      new (window as any).google.maps.Map(mapRef.current, {
+      mapInstanceRef.current = new (window as any).google.maps.Map(mapRef.current, {
         center: { lat: 12.9716, lng: 77.5946 }, // Bengaluru center
         zoom: 11.5,
         disableDefaultUI: true,
@@ -229,13 +230,40 @@ export function MapCanvas({ layer, selectedId, onLocationClick, localitiesOverri
 
       {/* Map controls */}
       <div className="absolute right-4 bottom-6 flex flex-col gap-2">
-        <button className="h-9 w-9 rounded-lg glass-strong flex items-center justify-center hover:bg-primary/10 transition-colors" title="Zoom in">
+        <button 
+          onClick={() => {
+            if (mapInstanceRef.current) {
+              const currentZoom = mapInstanceRef.current.getZoom();
+              mapInstanceRef.current.setZoom(currentZoom + 1);
+            }
+          }}
+          className="h-9 w-9 rounded-lg glass-strong flex items-center justify-center hover:bg-primary/10 transition-colors" 
+          title="Zoom in"
+        >
           <Plus className="h-4 w-4" />
         </button>
-        <button className="h-9 w-9 rounded-lg glass-strong flex items-center justify-center hover:bg-primary/10 transition-colors" title="Zoom out">
+        <button 
+          onClick={() => {
+            if (mapInstanceRef.current) {
+              const currentZoom = mapInstanceRef.current.getZoom();
+              mapInstanceRef.current.setZoom(currentZoom - 1);
+            }
+          }}
+          className="h-9 w-9 rounded-lg glass-strong flex items-center justify-center hover:bg-primary/10 transition-colors" 
+          title="Zoom out"
+        >
           <Minus className="h-4 w-4" />
         </button>
-        <button className="h-9 w-9 rounded-lg glass-strong flex items-center justify-center hover:bg-primary/10 transition-colors" title="My location">
+        <button 
+          onClick={() => {
+            if (mapInstanceRef.current) {
+              mapInstanceRef.current.setCenter({ lat: 12.9716, lng: 77.5946 });
+              mapInstanceRef.current.setZoom(11.5);
+            }
+          }}
+          className="h-9 w-9 rounded-lg glass-strong flex items-center justify-center hover:bg-primary/10 transition-colors" 
+          title="My location"
+        >
           <Crosshair className="h-4 w-4 text-primary" />
         </button>
         <button className="h-9 w-9 rounded-lg glass-strong flex items-center justify-center hover:bg-primary/10 transition-colors" title="Layers">

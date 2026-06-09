@@ -17,23 +17,73 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsLoading(false);
-    });
+    let active = true;
+
+    const initAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (active) {
+          if (session) {
+            setSession(session);
+            setUser(session.user);
+          } else {
+            const isDummy = import.meta.env.VITE_SUPABASE_ANON_KEY === 'dummy_anon_key' || !import.meta.env.VITE_SUPABASE_URL;
+            if (isDummy) {
+              const localSession = localStorage.getItem('klimora_mock_session');
+              if (localSession) {
+                const parsed = JSON.parse(localSession);
+                setSession(parsed);
+                setUser(parsed.user);
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Supabase getSession error:", err);
+        try {
+          const localSession = localStorage.getItem('klimora_mock_session');
+          if (localSession && active) {
+            const parsed = JSON.parse(localSession);
+            setSession(parsed);
+            setUser(parsed.user);
+          }
+        } catch {}
+      } finally {
+        if (active) setIsLoading(false);
+      }
+    };
+
+    initAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsLoading(false);
+      if (!active) return;
+      if (session) {
+        setSession(session);
+        setUser(session.user);
+        setIsLoading(false);
+      } else {
+        const localSession = localStorage.getItem('klimora_mock_session');
+        if (!localSession) {
+          setSession(null);
+          setUser(null);
+          setIsLoading(false);
+        }
+      }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    localStorage.removeItem('klimora_mock_session');
+    try {
+      await supabase.auth.signOut();
+    } catch {}
+    setSession(null);
+    setUser(null);
   };
 
   return (

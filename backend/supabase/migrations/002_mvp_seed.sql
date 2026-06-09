@@ -5,7 +5,7 @@ values
   ('11111111-1111-4111-8111-111111111111', 'indiranagar', 'Indiranagar', 'Bengaluru', 'Karnataka', 'India', 12.971600, 77.641100, 'Dense built-up ward with active heat-island and canopy-loss signals.'),
   ('22222222-2222-4222-8222-222222222222', 'koramangala', 'Koramangala', 'Bengaluru', 'Karnataka', 'India', 12.935200, 77.624500, 'Mixed-use ward with moderate vegetation and restoration opportunities.'),
   ('33333333-3333-4333-8333-333333333333', 'jayanagar', 'Jayanagar', 'Bengaluru', 'Karnataka', 'India', 12.929300, 77.582500, 'Older green locality with stronger canopy and lower heat stress.'),
-  ('44444444-4444-4444-8444-444444444444', 'hsr-layout', 'HSR Layout', 'Bengaluru', 'Karnataka', 'India', 12.911600, 77.647300, 'Rapidly urbanising locality with high heat and water-stress signals.'),
+  ('44444444-4444-4444-8444-444444444444', 'hsr', 'HSR Layout', 'Bengaluru', 'Karnataka', 'India', 12.911600, 77.647300, 'Rapidly urbanising locality with high heat and water-stress signals.'),
   ('55555555-5555-4555-8555-555555555555', 'whitefield', 'Whitefield', 'Bengaluru', 'Karnataka', 'India', 12.969800, 77.749900, 'Tech corridor locality with construction-driven heat and lake restoration context.')
 on conflict (slug) do update set
   name = excluded.name,

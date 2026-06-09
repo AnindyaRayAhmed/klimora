@@ -22,11 +22,47 @@ export function useDashboardIntelligence() {
       const mapped = data.map((l:any) => adaptClimateScoreToLocality(l, {}));
       setLocalitiesWithPins(mapped);
 
-      if (!selectedLocalityId && data.length > 0) {
-        setSelectedLocalityId(data[0].id);
+      if (!selectedLocalityId && mapped.length > 0) {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const { latitude, longitude } = position.coords;
+              let closestLoc = mapped[0];
+              let minDistance = Infinity;
+              
+              mapped.forEach(loc => {
+                if (loc.coordinates) {
+                  const dist = Math.sqrt(
+                    Math.pow(loc.coordinates.lat - latitude, 2) + 
+                    Math.pow(loc.coordinates.lng - longitude, 2)
+                  );
+                  if (dist < minDistance) {
+                    minDistance = dist;
+                    closestLoc = loc;
+                  }
+                }
+              });
+              setSelectedLocalityId(closestLoc.id);
+              setLoadingInitial(false);
+            },
+            (error) => {
+              console.warn("Geolocation error, using default:", error.message);
+              setSelectedLocalityId(mapped[0].id);
+              setLoadingInitial(false);
+            },
+            { timeout: 8000 }
+          );
+        } else {
+          setSelectedLocalityId(mapped[0].id);
+          setLoadingInitial(false);
+        }
+      } else {
+        setLoadingInitial(false);
       }
+    }).catch(err => {
+      console.error(err);
       setLoadingInitial(false);
-    }).catch(console.error);
+    });
   }, []);
 
   useEffect(() => {
