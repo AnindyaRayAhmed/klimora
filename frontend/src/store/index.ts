@@ -3,8 +3,8 @@ import { create } from 'zustand';
 interface AppState {
   selectedLocalityId: string | null;
   setSelectedLocalityId: (id: string | null) => void;
-  activeClimateLayer: 'overall' | 'aqi' | 'ndvi' | 'heat' | 'rainfall';
-  setActiveClimateLayer: (layer: 'overall' | 'aqi' | 'ndvi' | 'heat' | 'rainfall') => void;
+  activeClimateLayer: 'climate' | 'aqi' | 'vegetation' | 'heat' | 'rainfall' | 'community';
+  setActiveClimateLayer: (layer: 'climate' | 'aqi' | 'vegetation' | 'heat' | 'rainfall' | 'community') => void;
   ritActiveConversationId: string | null;
   setRitActiveConversationId: (id: string | null) => void;
 }
@@ -12,7 +12,7 @@ interface AppState {
 export const useAppStore = create<AppState>((set) => ({
   selectedLocalityId: null,
   setSelectedLocalityId: (id) => set({ selectedLocalityId: id }),
-  activeClimateLayer: 'overall',
+  activeClimateLayer: 'climate',
   setActiveClimateLayer: (layer) => set({ activeClimateLayer: layer }),
   ritActiveConversationId: null,
   setRitActiveConversationId: (id) => set({ ritActiveConversationId: id }),

@@ -16,7 +16,7 @@ export function ConfidenceBadge({
   basis?: string;
   className?: string;
 }) {
-  const cfg = config[level];
+  const cfg = config[level] || config.Medium;
   const Icon = cfg.icon;
   return (
     <span

@@ -71,9 +71,10 @@ const hotspotsByLayer: Record<ClimateLayer, { left: string; top: string; size: n
 
 export function MapCanvas({ layer, selectedId, onLocationClick, localitiesOverride }: Props) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const color = layerConfig[layer].color;
-  const cells = buildCells(layerSeeds[layer]);
-  const hotspots = hotspotsByLayer[layer];
+  const config = layerConfig[layer] || layerConfig["climate"];
+  const color = config.color;
+  const cells = buildCells(layerSeeds[layer] ?? layerSeeds["climate"]);
+  const hotspots = hotspotsByLayer[layer] || hotspotsByLayer["climate"];
 
   return (
     <div className="relative h-full w-full overflow-hidden bg-[oklch(0.13_0.025_225)]">
@@ -192,7 +193,7 @@ export function MapCanvas({ layer, selectedId, onLocationClick, localitiesOverri
 
       {/* Layer legend */}
       <div className="absolute left-4 bottom-6 glass-strong rounded-lg px-3 py-2.5 text-xs">
-        <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">{layerConfig[layer].label}</div>
+        <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">{config.label}</div>
         <div className="flex items-center gap-2">
           <div className="h-2 w-32 rounded-full" style={{ background: `linear-gradient(to right, transparent, ${color})` }} />
         </div>
