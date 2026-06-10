@@ -1,6 +1,7 @@
 import { GeminiClient } from "../../../providers/gemini/gemini.client.js";
 import { RitAgentResponse, RitContextPacket, RitIntent, RitBehaviorProfile } from "./rit.types.js";
 import { ritPrompts } from "./rit-prompts.js";
+import { UpstreamDataError } from "../../../shared/errors.js";
 
 export class ResponseSynthesisService {
   constructor(private readonly gemini: GeminiClient) {}
@@ -73,7 +74,8 @@ Do not hallucinate data. If data is missing, admit you don't have it.
       return await this.gemini.generateText(prompt);
     } catch (e) {
       console.error("Gemini synthesis failed:", e);
-      return "I'm having a little trouble connecting to my climate intelligence right now, but I'm here to help. Could you try asking again?";
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      throw new UpstreamDataError(`AI inference failed: ${errorMessage}`);
     }
   }
 }

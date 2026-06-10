@@ -76,7 +76,12 @@ export function useRitChat() {
 
     } catch (err) {
       console.error(err);
-      setMessages(prev => [...prev, { id: crypto.randomUUID(), role: 'assistant', content: 'Sorry, I encountered an error connecting to my climate intelligence.' }]);
+      const errorMessage = err instanceof Error ? err.message : 'Sorry, I encountered an unknown error connecting to my climate intelligence.';
+      setMessages(prev => {
+        // remove the optimistic user msg since it failed
+        const withoutOptimistic = prev.filter(m => !m.isOptimistic);
+        return [...withoutOptimistic, { ...userMsg, isOptimistic: false }, { id: crypto.randomUUID(), role: 'assistant', content: errorMessage }];
+      });
     } finally {
       setThinking(false);
     }

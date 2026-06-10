@@ -25,7 +25,7 @@ export async function apiClient<T>(endpoint: string, options: RequestInit = {}):
     let errorMsg = 'An error occurred';
     try {
       const errData = await response.json();
-      errorMsg = errData.message || errorMsg;
+      errorMsg = errData.error?.message || errData.message || errorMsg;
     } catch {}
     throw new Error(errorMsg);
   }

@@ -12,6 +12,9 @@ export class GeminiClient {
   }
 
   async analyzeImage(imageBuffer: Buffer, mimeType: string, prompt: string): Promise<any> {
+    if (!env.geminiApiKey) {
+      throw new Error("GEMINI_API_KEY is not set. Cannot perform image analysis.");
+    }
     const model = this.ai.getGenerativeModel({
       model: "gemini-2.0-flash",
       generationConfig: {
@@ -38,6 +41,9 @@ export class GeminiClient {
   }
 
   async generateText(prompt: string): Promise<string> {
+    if (!env.geminiApiKey) {
+      throw new Error("GEMINI_API_KEY is not set. Cannot synthesize response.");
+    }
     const model = this.ai.getGenerativeModel({ model: "gemini-2.0-flash" });
     const result = await model.generateContent(prompt);
     return result.response.text();

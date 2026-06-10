@@ -1400,6 +1400,7 @@ Klimora's **primary production deployment path** connects your GitHub repository
 4. ✅ Deploy backend to Cloud Run (from GitHub)
 5. ✅ Set FRONTEND_URL in Cloud Run once you have the frontend URL
 6. ✅ Deploy frontend to Vercel/Firebase with VITE_* variables set
+7. ✅ Configure Supabase Auth URL settings (Site URL and Redirect URLs)
 ```
 
 ---
@@ -1528,6 +1529,17 @@ The frontend is a **static site** (compiled HTML + CSS + JS). After Vite builds 
 6. Click **"Deploy"**
 
 Vercel will build and deploy the frontend. You will get a URL like `https://klimora.vercel.app`.
+
+#### Supabase Auth Configuration (Required)
+
+After deploying the frontend to Vercel:
+
+1. Go to **Supabase** → **Authentication** → **URL Configuration**
+2. Set **Site URL** to the deployed Vercel domain
+3. Add the Vercel domain under **Redirect URLs** (e.g., `https://klimora.vercel.app/**`)
+4. Save changes
+
+Without this step, email verification and auth redirects will fail in production.
 
 > After getting your Vercel URL, go back to **Cloud Run → klimora-backend → Edit & Deploy New Revision** and update `FRONTEND_URL` to your Vercel URL. This ensures CORS is configured correctly.
 

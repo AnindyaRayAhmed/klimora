@@ -22,7 +22,8 @@ export function AppNav() {
           <Logo className="[&>div:last-child]:hidden" />
         </Link>
         <nav className="flex flex-col gap-1.5">
-          {nav.map(({ to, label, icon: Icon }) => {
+          {nav.map(({ to, label, icon }) => {
+            const Icon = icon || Map;
             const active = pathname === to;
             return (
               <Link
@@ -51,7 +52,8 @@ export function AppNav() {
       {/* Mobile bottom bar */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 glass-strong border-t border-border/50">
         <div className="flex items-center justify-around px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
-          {nav.map(({ to, label, icon: Icon }) => {
+          {nav.map(({ to, label, icon }) => {
+            const Icon = icon || Map;
             const active = pathname === to;
             return (
               <Link

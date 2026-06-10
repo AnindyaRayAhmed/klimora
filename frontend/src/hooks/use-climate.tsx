@@ -24,14 +24,18 @@ export function useDashboardIntelligence() {
 
       if (!selectedLocalityId && mapped.length > 0) {
         if (navigator.geolocation) {
+          console.log("[Geolocation] Attempting to get coordinates...");
           navigator.geolocation.getCurrentPosition(
             (position) => {
               const { latitude, longitude } = position.coords;
+              console.log("[Geolocation] Detected coordinates:", latitude, longitude);
+              
               let closestLoc = mapped[0];
               let minDistance = Infinity;
               
               mapped.forEach(loc => {
                 if (loc.coordinates) {
+                  // Euclidean distance - rough approximation
                   const dist = Math.sqrt(
                     Math.pow(loc.coordinates.lat - latitude, 2) + 
                     Math.pow(loc.coordinates.lng - longitude, 2)
@@ -42,17 +46,20 @@ export function useDashboardIntelligence() {
                   }
                 }
               });
+              
+              console.log("[Geolocation] Nearest locality distance:", minDistance, "to", closestLoc.id);
               setSelectedLocalityId(closestLoc.id);
               setLoadingInitial(false);
             },
             (error) => {
-              console.warn("Geolocation error, using default:", error.message);
+              console.warn("[Geolocation] Fallback triggered:", error.message, "Using:", mapped[0].id);
               setSelectedLocalityId(mapped[0].id);
               setLoadingInitial(false);
             },
             { timeout: 8000 }
           );
         } else {
+          console.warn("[Geolocation] Not supported by browser. Using default:", mapped[0].id);
           setSelectedLocalityId(mapped[0].id);
           setLoadingInitial(false);
         }

@@ -127,6 +127,17 @@ export function MapCanvas({ layer, selectedId, onLocationClick, localitiesOverri
     }
   }, []);
 
+  useEffect(() => {
+    if (mapInstanceRef.current && selectedId) {
+      const locList = localitiesOverride || localities;
+      const targetLoc = locList.find((l: any) => l.id === selectedId);
+      if (targetLoc?.coordinates) {
+        console.log(`[MapCanvas] Recentering map to ${targetLoc.id} at`, targetLoc.coordinates);
+        mapInstanceRef.current.panTo(targetLoc.coordinates);
+      }
+    }
+  }, [selectedId, localitiesOverride]);
+
   return (
     <div className="relative h-full w-full overflow-hidden bg-[oklch(0.13_0.025_225)]">
       {/* Real Google Maps Basemap */}
@@ -257,8 +268,15 @@ export function MapCanvas({ layer, selectedId, onLocationClick, localitiesOverri
         <button 
           onClick={() => {
             if (mapInstanceRef.current) {
-              mapInstanceRef.current.setCenter({ lat: 12.9716, lng: 77.5946 });
-              mapInstanceRef.current.setZoom(11.5);
+              const locList = localitiesOverride || localities;
+              const targetLoc = locList.find((l: any) => l.id === selectedId);
+              if (targetLoc?.coordinates) {
+                mapInstanceRef.current.setCenter(targetLoc.coordinates);
+                mapInstanceRef.current.setZoom(13.5);
+              } else {
+                mapInstanceRef.current.setCenter({ lat: 12.9716, lng: 77.5946 });
+                mapInstanceRef.current.setZoom(11.5);
+              }
             }
           }}
           className="h-9 w-9 rounded-lg glass-strong flex items-center justify-center hover:bg-primary/10 transition-colors" 

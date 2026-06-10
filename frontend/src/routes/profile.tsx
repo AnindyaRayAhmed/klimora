@@ -38,7 +38,7 @@ function ProfilePage() {
 
   if (!u) return <div className="min-h-screen flex items-center justify-center">Loading profile...</div>;
 
-  const progress = (u.points / u.nextLevelAt) * 100;
+  const progress = u.nextLevelAt ? ((u.points || 0) / u.nextLevelAt) * 100 : 0;
 
   return (
     <div className="min-h-screen px-4 md:px-8 py-6 md:py-10">
@@ -81,8 +81,8 @@ function ProfilePage() {
           {/* Level progress */}
           <div className="mt-6 relative">
             <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
-              <span>{u.points.toLocaleString()} pts</span>
-              <span>{u.nextLevelAt.toLocaleString()} pts → Lv {u.level + 1}</span>
+              <span>{(u.points || 0).toLocaleString()} pts</span>
+              <span>{(u.nextLevelAt || 0).toLocaleString()} pts → Lv {(u.level || 0) + 1}</span>
             </div>
             <div className="h-2 bg-sidebar-accent rounded-full overflow-hidden">
               <div className="h-full rounded-full transition-all" style={{ width: `${progress}%`, background: "var(--gradient-forest)" }} />
@@ -93,12 +93,12 @@ function ProfilePage() {
         {/* Points summary */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { label: "Total points", value: u.points.toLocaleString(), icon: Award, token: "primary" },
-            { label: "This week", value: `+${u.weeklyPoints}`, icon: TrendingUp, token: "vegetation" },
-            { label: "This month", value: `+${u.monthlyPoints}`, icon: Calendar, token: "rainfall" },
-            { label: "Completed", value: u.completed, icon: CheckCircle2, token: "accent" },
+            { label: "Total points", value: (u.points || 0).toLocaleString(), icon: Award, token: "primary" },
+            { label: "This week", value: `+${u.weeklyPoints || 0}`, icon: TrendingUp, token: "vegetation" },
+            { label: "This month", value: `+${u.monthlyPoints || 0}`, icon: Calendar, token: "rainfall" },
+            { label: "Completed", value: u.completed || 0, icon: CheckCircle2, token: "accent" },
           ].map((s) => {
-            const Icon = s.icon;
+            const Icon = s.icon || Award;
             return (
               <div key={s.label} className="glass-strong rounded-2xl p-4">
                 <Icon className="h-4 w-4 mb-2" style={{ color: `var(--${s.token})` }} />
@@ -116,7 +116,7 @@ function ProfilePage() {
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
             {["Canopy Keeper", "Heat Defender", "Green Steward", "Water Sentinel", "Climate Ranger", "Community Guardian"].map((b) => {
-              const earned = u.badges.includes(b);
+              const earned = (u.badges || []).includes(b);
               const Icon = titleIcons[b] || Award;
               return (
                 <div
@@ -141,7 +141,7 @@ function ProfilePage() {
         <section className="glass-strong rounded-2xl p-6">
           <h2 className="text-sm font-semibold mb-4">Mission History</h2>
           <div className="divide-y divide-border/40">
-            {missionHistory.map((m) => {
+            {(missionHistory || []).map((m) => {
               const isVerified = m.status === "verified";
               return (
                 <div key={m.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
@@ -179,7 +179,7 @@ function ProfilePage() {
           </p>
 
           <div className="space-y-3">
-            {verificationQueue.map((v) => (
+            {(verificationQueue || []).map((v) => (
               <div key={v.id} className="rounded-xl glass p-4">
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <div className="min-w-0">

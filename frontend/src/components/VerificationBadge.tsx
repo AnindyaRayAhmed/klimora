@@ -18,7 +18,7 @@ export function VerificationBadge({
   size?: "xs" | "sm";
   showIcon?: boolean;
 }) {
-  const c = config[status];
+  const c = config[status] || config.pending;
   const Icon = c.icon;
   const padding = size === "xs" ? "px-1.5 py-0.5 text-[10px]" : "px-2 py-0.5 text-[11px]";
   return (
@@ -45,7 +45,7 @@ const verifiedByConfig: Record<VerifiedBy, { label: string; icon: typeof ShieldC
 };
 
 export function VerifiedByChip({ by }: { by: VerifiedBy }) {
-  const c = verifiedByConfig[by];
+  const c = verifiedByConfig[by] || verifiedByConfig.manual;
   const Icon = c.icon;
   return (
     <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium glass text-muted-foreground">
