@@ -87,8 +87,9 @@ function LoginPage() {
       }
     } catch (err: any) {
       console.error(err);
-      // Fallback to demo mode login if real request fails due to offline/config issues
-      if (isDummy || err.message?.includes("fetch") || err.message?.includes("network")) {
+      // Fallback to demo mode login if real request fails due to offline/config issues (ONLY in development)
+      const isProduction = import.meta.env.PROD;
+      if (!isProduction && (isDummy || err.message?.includes("fetch") || err.message?.includes("network"))) {
         const mockUser = {
           id: "mock-uid-12345",
           email,

@@ -4,6 +4,7 @@ import { VerificationRulesService } from "./verification-rules.service.js";
 import { PointsService } from "../users/points.service.js";
 import { VerificationResult, VerificationStatus } from "./verification.types.js";
 import { UpstreamDataError, NotFoundError } from "../../shared/errors.js";
+import { env } from "../../config/env.js";
 
 export class VerificationOrchestratorService {
   constructor(
@@ -75,7 +76,7 @@ export class VerificationOrchestratorService {
           detected_objects: geminiAnalysis.detectedObjects,
           mission_compliance: { observations: geminiAnalysis.observations },
           reason: decision.reason,
-          model_name: "gemini-2.0-flash",
+          model_name: env.geminiModel,
           created_at: new Date().toISOString()
         });
 

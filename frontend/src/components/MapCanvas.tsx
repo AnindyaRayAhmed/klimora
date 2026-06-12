@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { Crosshair, Plus, Minus, Layers, MapPin } from "lucide-react";
 import { localities, type LocalityId } from "@/lib/ui-constants";
 
+import { useAppStore } from "@/store";
+
 export type ClimateLayer = "heat" | "vegetation" | "rainfall" | "aqi" | "climate" | "community";
 
 type Props = {
@@ -73,6 +75,7 @@ export function MapCanvas({ layer, selectedId, onLocationClick, localitiesOverri
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
+  const { detectedCoordinates } = useAppStore();
 
   const config = layerConfig[layer] || layerConfig["climate"];
   const color = config.color;
@@ -129,14 +132,19 @@ export function MapCanvas({ layer, selectedId, onLocationClick, localitiesOverri
 
   useEffect(() => {
     if (mapInstanceRef.current && selectedId) {
-      const locList = localitiesOverride || localities;
-      const targetLoc = locList.find((l: any) => l.id === selectedId);
-      if (targetLoc?.coordinates) {
-        console.log(`[MapCanvas] Recentering map to ${targetLoc.id} at`, targetLoc.coordinates);
-        mapInstanceRef.current.panTo(targetLoc.coordinates);
+      if (selectedId === "dynamic" && detectedCoordinates) {
+        console.log(`[MapCanvas] Recentering map to dynamic coordinates`, detectedCoordinates);
+        mapInstanceRef.current.panTo(detectedCoordinates);
+      } else {
+        const locList = localitiesOverride || localities;
+        const targetLoc = locList.find((l: any) => l.id === selectedId);
+        if (targetLoc?.coordinates) {
+          console.log(`[MapCanvas] Recentering map to ${targetLoc.id} at`, targetLoc.coordinates);
+          mapInstanceRef.current.panTo(targetLoc.coordinates);
+        }
       }
     }
-  }, [selectedId, localitiesOverride]);
+  }, [selectedId, localitiesOverride, detectedCoordinates]);
 
   return (
     <div className="relative h-full w-full overflow-hidden bg-[oklch(0.13_0.025_225)]">
@@ -268,14 +276,19 @@ export function MapCanvas({ layer, selectedId, onLocationClick, localitiesOverri
         <button 
           onClick={() => {
             if (mapInstanceRef.current) {
-              const locList = localitiesOverride || localities;
-              const targetLoc = locList.find((l: any) => l.id === selectedId);
-              if (targetLoc?.coordinates) {
-                mapInstanceRef.current.setCenter(targetLoc.coordinates);
+              if (selectedId === "dynamic" && detectedCoordinates) {
+                mapInstanceRef.current.setCenter(detectedCoordinates);
                 mapInstanceRef.current.setZoom(13.5);
               } else {
-                mapInstanceRef.current.setCenter({ lat: 12.9716, lng: 77.5946 });
-                mapInstanceRef.current.setZoom(11.5);
+                const locList = localitiesOverride || localities;
+                const targetLoc = locList.find((l: any) => l.id === selectedId);
+                if (targetLoc?.coordinates) {
+                  mapInstanceRef.current.setCenter(targetLoc.coordinates);
+                  mapInstanceRef.current.setZoom(13.5);
+                } else {
+                  mapInstanceRef.current.setCenter({ lat: 12.9716, lng: 77.5946 });
+                  mapInstanceRef.current.setZoom(11.5);
+                }
               }
             }
           }}

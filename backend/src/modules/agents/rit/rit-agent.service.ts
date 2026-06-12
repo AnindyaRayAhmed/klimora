@@ -38,8 +38,7 @@ export class RitAgentService {
     // 3. Context Assembly
     const contextPacket = await this.contextAssembler.assemble(
       intent, 
-      query.localityId, 
-      query.userId, 
+      query, 
       conversationId
     );
 

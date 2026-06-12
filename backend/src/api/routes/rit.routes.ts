@@ -24,6 +24,8 @@ import { RitInsightService } from "../../modules/agents/rit/rit-insight.service.
 const chatSchema = z.object({
   message: z.string().min(1),
   localityId: z.string(),
+  lat: z.coerce.number().optional(),
+  lng: z.coerce.number().optional(),
   conversationId: z.string().uuid().optional(),
 });
 
@@ -69,12 +71,22 @@ export async function registerRitRoutes(app: FastifyInstance): Promise<void> {
     }, async (request, reply) => {
       const body = chatSchema.parse(request.body);
       const userId = request.user!.id;
-      const locality = await localitiesService.getLocalityBySlugOrId(body.localityId);
+      
+      let finalLocalityId = body.localityId;
+      if (body.localityId !== "dynamic" && !body.localityId.startsWith("dynamic-")) {
+        const locality = await localitiesService.getLocalityBySlugOrId(body.localityId);
+        finalLocalityId = locality.id;
+      }
+      
+      // We pass the finalLocalityId along with the optional lat/lng context 
+      // to the Rit Agent so it can build context from coordinates.
       return await ritAgent.processQuery({
         userId,
-        localityId: locality.id,
+        localityId: finalLocalityId,
         message: body.message,
-        conversationId: body.conversationId
+        conversationId: body.conversationId,
+        lat: body.lat,
+        lng: body.lng
       });
     });
 

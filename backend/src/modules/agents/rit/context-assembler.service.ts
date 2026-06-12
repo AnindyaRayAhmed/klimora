@@ -1,6 +1,7 @@
 import { RitToolsService } from "./rit-tools.service.js";
-import { RitIntent, RitContextPacket } from "./rit.types.js";
+import { RitIntent, RitContextPacket, RitQuery } from "./rit.types.js";
 import { MemoryService } from "./memory.service.js";
+import { GoogleMapsClient } from "../../../providers/google-maps/google-maps.client.js";
 
 export class ContextAssemblerService {
   constructor(
@@ -8,35 +9,63 @@ export class ContextAssemblerService {
     private readonly memoryService: MemoryService
   ) {}
 
-  async assemble(intent: RitIntent, localityId: string, userId: string, conversationId: string): Promise<RitContextPacket> {
+  async assemble(intent: RitIntent, query: RitQuery, conversationId: string): Promise<RitContextPacket> {
     const packet: RitContextPacket = {};
 
-    packet.userProfile = await this.ritTools.getUserProfile(userId);
+    packet.userProfile = await this.ritTools.getUserProfile(query.userId);
     packet.recentMemory = await this.memoryService.getMemory(conversationId);
-    packet.behaviorProfile = await this.ritTools.inferBehaviorProfile(userId);
+    packet.behaviorProfile = await this.ritTools.inferBehaviorProfile(query.userId);
 
-    const coords = await this.ritTools.getLocalityCoordinates(localityId);
-    const lat = coords?.latitude ? Number(coords.latitude) : 0;
-    const lon = coords?.longitude ? Number(coords.longitude) : 0;
+    let lat = query.lat || 0;
+    let lon = query.lng || 0;
+    
+    if (query.localityId !== "dynamic" && !query.localityId.startsWith("dynamic-")) {
+      const coords = await this.ritTools.getLocalityCoordinates(query.localityId);
+      if (coords) {
+        lat = coords.latitude ? Number(coords.latitude) : lat;
+        lon = coords.longitude ? Number(coords.longitude) : lon;
+      }
+    } else if (lat && lon) {
+      // It's a dynamic query, let's reverse geocode to get city context
+      try {
+        const mapsClient = new GoogleMapsClient();
+        const locationMeta = await mapsClient.reverseGeocode(lat, lon);
+        let city = "Unknown Location";
+        if (locationMeta && locationMeta.address_components) {
+          const getComponent = (type: string) => 
+            locationMeta.address_components.find((c: any) => c.types.includes(type))?.long_name;
+          city = getComponent("locality") || getComponent("administrative_area_level_2") || city;
+        }
+        packet.dynamicLocation = { lat, lng: lon, city };
+      } catch (e) {
+        console.error("Failed to reverse geocode dynamic location for Rit:", e);
+      }
+    }
 
     switch (intent) {
       case RitIntent.CLIMATE_EXPLANATION:
       case RitIntent.ENVIRONMENTAL_QA:
-        packet.climateScore = await this.ritTools.getLatestClimateScore(localityId);
+        if (query.localityId !== "dynamic" && !query.localityId.startsWith("dynamic-")) {
+          packet.climateScore = await this.ritTools.getLatestClimateScore(query.localityId);
+        }
         if (lat && lon) {
-          packet.freshNdvi = await this.ritTools.getFreshNDVI(localityId, lat, lon);
+          packet.freshNdvi = await this.ritTools.getFreshNDVI(query.localityId, lat, lon);
         }
         break;
       
       case RitIntent.MISSION_RECOMMENDATION:
-        packet.climateScore = await this.ritTools.getLatestClimateScore(localityId);
-        packet.recommendations = await this.ritTools.getRecommendations(localityId, userId);
+        if (query.localityId !== "dynamic" && !query.localityId.startsWith("dynamic-")) {
+          packet.climateScore = await this.ritTools.getLatestClimateScore(query.localityId);
+          packet.recommendations = await this.ritTools.getRecommendations(query.localityId, query.userId);
+        }
         break;
 
       case RitIntent.FORECAST_DISCUSSION:
-        packet.climateScore = await this.ritTools.getLatestClimateScore(localityId);
+        if (query.localityId !== "dynamic" && !query.localityId.startsWith("dynamic-")) {
+          packet.climateScore = await this.ritTools.getLatestClimateScore(query.localityId);
+        }
         if (lat && lon) {
-          packet.forecasts = await this.ritTools.getLiveForecast(localityId, lat, lon);
+          packet.forecasts = await this.ritTools.getLiveForecast(query.localityId, lat, lon);
         }
         break;
 
@@ -49,12 +78,16 @@ export class ContextAssemblerService {
         break;
 
       case RitIntent.COMMUNITY_IMPACT:
-        packet.localityStats = await this.ritTools.getCommunityImpact(localityId);
-        packet.climateScore = { trendNarrative: await this.ritTools.getClimateTrendNarrative(localityId) };
+        if (query.localityId !== "dynamic" && !query.localityId.startsWith("dynamic-")) {
+          packet.localityStats = await this.ritTools.getCommunityImpact(query.localityId);
+          packet.climateScore = { trendNarrative: await this.ritTools.getClimateTrendNarrative(query.localityId) };
+        }
         break;
 
       case RitIntent.MOTIVATION:
-        packet.climateScore = await this.ritTools.getLatestClimateScore(localityId);
+        if (query.localityId !== "dynamic" && !query.localityId.startsWith("dynamic-")) {
+          packet.climateScore = await this.ritTools.getLatestClimateScore(query.localityId);
+        }
         break;
         
       case RitIntent.GENERAL_CONVERSATION:

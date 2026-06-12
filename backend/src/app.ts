@@ -17,6 +17,7 @@ import { registerRitRoutes } from "./api/routes/rit.routes.js";
 import { registerUserRoutes } from "./api/routes/users.routes.js";
 import { registerVerificationRoutes } from "./api/routes/verification.routes.js";
 import { registerRecommendationRoutes } from "./api/routes/recommendations.routes.js";
+import { GeminiClient } from "./providers/gemini/gemini.client.js";
 
 import crypto from "node:crypto";
 
@@ -34,6 +35,20 @@ export async function buildApp(): Promise<FastifyInstance> {
   });
 
   app.setErrorHandler(errorMiddleware);
+
+  // Verify Gemini model initialization on startup
+  try {
+    const gemini = new GeminiClient();
+    const activeModel = gemini.getModelName();
+    console.log(`[Gemini Init] Active Gemini model: ${activeModel}`);
+    console.log(`[Gemini Init] Gemini client initialized successfully.`);
+    app.log.info(`[Gemini Init] Active Gemini model: ${activeModel}`);
+    app.log.info(`[Gemini Init] Gemini client initialized successfully.`);
+  } catch (error: any) {
+    console.error(`[Gemini Init] Failed to initialize Gemini client: ${error.message}`);
+    app.log.error(`[Gemini Init] Failed to initialize Gemini client: ${error.message}`);
+    throw new Error(`Critical backend startup failure: Gemini client initialization failed. ${error.message}`);
+  }
 
   const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
 

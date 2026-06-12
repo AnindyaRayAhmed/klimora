@@ -15,6 +15,8 @@ export interface RitQuery {
   localityId: string;
   message: string;
   conversationId?: string;
+  lat?: number;
+  lng?: number;
 }
 
 export enum RitBehaviorProfile {
@@ -44,6 +46,7 @@ export interface RitContextPacket {
   verificationResult?: any;
   localityStats?: any;
   recentMemory?: RitConversationMemory;
+  dynamicLocation?: { lat: number; lng: number; city: string };
 }
 
 export interface RitConversationMemory {

@@ -7,6 +7,8 @@ interface AppState {
   setActiveClimateLayer: (layer: 'climate' | 'aqi' | 'vegetation' | 'heat' | 'rainfall' | 'community') => void;
   ritActiveConversationId: string | null;
   setRitActiveConversationId: (id: string | null) => void;
+  detectedCoordinates: { lat: number; lng: number } | null;
+  setDetectedCoordinates: (coords: { lat: number; lng: number } | null) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -16,4 +18,6 @@ export const useAppStore = create<AppState>((set) => ({
   setActiveClimateLayer: (layer) => set({ activeClimateLayer: layer }),
   ritActiveConversationId: null,
   setRitActiveConversationId: (id) => set({ ritActiveConversationId: id }),
+  detectedCoordinates: null,
+  setDetectedCoordinates: (coords) => set({ detectedCoordinates: coords }),
 }));

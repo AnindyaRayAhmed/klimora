@@ -5,7 +5,7 @@ import { useAppStore } from '../store';
 import { type Locality, defaultLocality } from '../lib/ui-constants';
 
 export function useDashboardIntelligence() {
-  const { selectedLocalityId, setSelectedLocalityId } = useAppStore();
+  const { selectedLocalityId, setSelectedLocalityId, detectedCoordinates, setDetectedCoordinates } = useAppStore();
   
   const [localitiesRaw, setLocalitiesRaw] = useState<any[]>([]);
   const [activeLocalityData, setActiveLocalityData] = useState<Locality>(defaultLocality);
@@ -18,7 +18,6 @@ export function useDashboardIntelligence() {
       const data = res.data || [];
       setLocalitiesRaw(data);
       
-      // We map the raw localities onto frontend mock stubs initially to give them pins
       const mapped = data.map((l:any) => adaptClimateScoreToLocality(l, {}));
       setLocalitiesWithPins(mapped);
 
@@ -29,26 +28,8 @@ export function useDashboardIntelligence() {
             (position) => {
               const { latitude, longitude } = position.coords;
               console.log("[Geolocation] Detected coordinates:", latitude, longitude);
-              
-              let closestLoc = mapped[0];
-              let minDistance = Infinity;
-              
-              mapped.forEach(loc => {
-                if (loc.coordinates) {
-                  // Euclidean distance - rough approximation
-                  const dist = Math.sqrt(
-                    Math.pow(loc.coordinates.lat - latitude, 2) + 
-                    Math.pow(loc.coordinates.lng - longitude, 2)
-                  );
-                  if (dist < minDistance) {
-                    minDistance = dist;
-                    closestLoc = loc;
-                  }
-                }
-              });
-              
-              console.log("[Geolocation] Nearest locality distance:", minDistance, "to", closestLoc.id);
-              setSelectedLocalityId(closestLoc.id);
+              setDetectedCoordinates({ lat: latitude, lng: longitude });
+              setSelectedLocalityId("dynamic");
               setLoadingInitial(false);
             },
             (error) => {
@@ -73,21 +54,37 @@ export function useDashboardIntelligence() {
   }, []);
 
   useEffect(() => {
-    if (!selectedLocalityId || localitiesRaw.length === 0) return;
+    if (!selectedLocalityId) return;
 
-    const locRaw = localitiesRaw.find(l => l.slug === selectedLocalityId) || localitiesRaw[0];
-    
     const fetchScore = async () => {
       setIsHydratingScore(true);
       try {
-        const scoreRes = await climateClient.getLocalityScore(locRaw.slug);
-        const frontendObj = adaptClimateScoreToLocality(locRaw, scoreRes.data);
-        setActiveLocalityData(frontendObj);
-        
-        // Also update the pin map
-        setLocalitiesWithPins(prev => prev.map(p => p.id === frontendObj.id ? frontendObj : p));
+        if (selectedLocalityId === "dynamic" && detectedCoordinates) {
+          console.log("[Climate Data] Fetching dynamic score for", detectedCoordinates);
+          const scoreRes = await climateClient.getDynamicScore(detectedCoordinates.lat, detectedCoordinates.lng);
+          const dynamicLocality = {
+            id: scoreRes.data.id,
+            slug: scoreRes.data.slug,
+            name: scoreRes.data.name,
+            city: scoreRes.data.city,
+            state: scoreRes.data.state,
+            country: scoreRes.data.country,
+            latitude: scoreRes.data.latitude,
+            longitude: scoreRes.data.longitude
+          };
+          const frontendObj = adaptClimateScoreToLocality(dynamicLocality, scoreRes.data);
+          setActiveLocalityData(frontendObj);
+        } else {
+          const locRaw = localitiesRaw.find(l => l.slug === selectedLocalityId) || localitiesRaw[0];
+          if (!locRaw) return;
+          console.log("[Climate Data] Fetching locality score for", locRaw.slug);
+          const scoreRes = await climateClient.getLocalityScore(locRaw.slug);
+          const frontendObj = adaptClimateScoreToLocality(locRaw, scoreRes.data);
+          setActiveLocalityData(frontendObj);
+          setLocalitiesWithPins(prev => prev.map(p => p.id === frontendObj.id ? frontendObj : p));
+        }
       } catch (err) {
-        console.error("Failed to fetch score", err);
+        console.error("[Climate Data] Failed to fetch score", err);
       } finally {
         setIsHydratingScore(false);
       }
@@ -96,7 +93,7 @@ export function useDashboardIntelligence() {
     fetchScore();
     const interval = setInterval(fetchScore, 5 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [selectedLocalityId, localitiesRaw]);
+  }, [selectedLocalityId, detectedCoordinates, localitiesRaw]);
 
   return { 
     localitiesRaw,

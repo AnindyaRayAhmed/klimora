@@ -6,9 +6,17 @@ export class GeminiClient {
 
   constructor() {
     if (!env.geminiApiKey) {
-      console.warn("GEMINI_API_KEY is not set. Gemini features will fail.");
+      throw new Error("Failed to initialize Gemini Client: GEMINI_API_KEY is not configured. Please set the GEMINI_API_KEY environment variable.");
     }
-    this.ai = new GoogleGenerativeAI(env.geminiApiKey || "");
+    try {
+      this.ai = new GoogleGenerativeAI(env.geminiApiKey);
+    } catch (e: any) {
+      throw new Error(`Failed to initialize Gemini Client: ${e.message}`);
+    }
+  }
+
+  getModelName(): string {
+    return env.geminiModel;
   }
 
   async analyzeImage(imageBuffer: Buffer, mimeType: string, prompt: string): Promise<any> {
@@ -16,7 +24,7 @@ export class GeminiClient {
       throw new Error("GEMINI_API_KEY is not set. Cannot perform image analysis.");
     }
     const model = this.ai.getGenerativeModel({
-      model: "gemini-2.0-flash",
+      model: env.geminiModel,
       generationConfig: {
         responseMimeType: "application/json",
       },
@@ -44,7 +52,7 @@ export class GeminiClient {
     if (!env.geminiApiKey) {
       throw new Error("GEMINI_API_KEY is not set. Cannot synthesize response.");
     }
-    const model = this.ai.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const model = this.ai.getGenerativeModel({ model: env.geminiModel });
     const result = await model.generateContent(prompt);
     return result.response.text();
   }

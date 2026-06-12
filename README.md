@@ -1146,7 +1146,7 @@ Gemini powers both Rit (the AI chat) and the evidence verification engine.
 4. Copy and save the key
 
 > **What Gemini does in Klimora**:
-> - **Rit Agent**: Synthesizes climate context into conversational answers using the `gemini-2.0-flash` model
+> - **Rit Agent**: Synthesizes climate context into conversational answers using the `gemini-2.5-flash` model
 > - **Evidence Verification**: Analyses user-uploaded photos/videos against mission requirements using Gemini Vision
 
 #### 5.2 OpenWeather API Key (Weather Data)

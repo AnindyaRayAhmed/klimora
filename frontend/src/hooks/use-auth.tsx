@@ -20,34 +20,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let active = true;
 
     const initAuth = async () => {
+      const isProduction = import.meta.env.PROD;
+      const isDummy = import.meta.env.VITE_SUPABASE_ANON_KEY === 'dummy_anon_key' || !import.meta.env.VITE_SUPABASE_URL;
+
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (active) {
-          if (session) {
-            setSession(session);
-            setUser(session.user);
-          } else {
-            const isDummy = import.meta.env.VITE_SUPABASE_ANON_KEY === 'dummy_anon_key' || !import.meta.env.VITE_SUPABASE_URL;
-            if (isDummy) {
-              const localSession = localStorage.getItem('klimora_mock_session');
-              if (localSession) {
-                const parsed = JSON.parse(localSession);
-                setSession(parsed);
-                setUser(parsed.user);
-              }
+        if (isProduction || !isDummy) {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (active) {
+            if (session) {
+              setSession(session);
+              setUser(session.user);
+              console.log("Klimora Auth: Using production backend auth");
+            } else {
+              setSession(null);
+              setUser(null);
             }
           }
-        }
-      } catch (err) {
-        console.error("Supabase getSession error:", err);
-        try {
+        } else {
+          // Local development mode and using dummy credentials
           const localSession = localStorage.getItem('klimora_mock_session');
           if (localSession && active) {
             const parsed = JSON.parse(localSession);
             setSession(parsed);
             setUser(parsed.user);
+            console.log("Klimora Auth: Using local demo sandbox auth");
+          } else if (active) {
+            setSession(null);
+            setUser(null);
           }
-        } catch {}
+        }
+      } catch (err) {
+        console.error("Supabase getSession error:", err);
+        // Only allow fallback to mock session in development mode, never in production!
+        if (!isProduction && isDummy) {
+          try {
+            const localSession = localStorage.getItem('klimora_mock_session');
+            if (localSession && active) {
+              const parsed = JSON.parse(localSession);
+              setSession(parsed);
+              setUser(parsed.user);
+              console.log("Klimora Auth: Using local demo sandbox auth (fallback)");
+            }
+          } catch {}
+        }
       } finally {
         if (active) setIsLoading(false);
       }
@@ -57,17 +72,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!active) return;
+
+      const isProduction = import.meta.env.PROD;
+      const isDummy = import.meta.env.VITE_SUPABASE_ANON_KEY === 'dummy_anon_key' || !import.meta.env.VITE_SUPABASE_URL;
+
       if (session) {
         setSession(session);
         setUser(session.user);
         setIsLoading(false);
       } else {
-        const localSession = localStorage.getItem('klimora_mock_session');
-        if (!localSession) {
-          setSession(null);
-          setUser(null);
-          setIsLoading(false);
+        // Only fallback to mock session in dev mode and if it exists
+        if (!isProduction && isDummy) {
+          const localSession = localStorage.getItem('klimora_mock_session');
+          if (localSession) {
+            const parsed = JSON.parse(localSession);
+            setSession(parsed);
+            setUser(parsed.user);
+            setIsLoading(false);
+            return;
+          }
         }
+        setSession(null);
+        setUser(null);
+        setIsLoading(false);
       }
     });
 

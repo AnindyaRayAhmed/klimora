@@ -13,13 +13,16 @@ export const climateClient = {
 
   getForecast: (localityId: string) => 
     apiClient<any>(`/forecasts/localities/${localityId}`),
+
+  getDynamicScore: (lat: number, lng: number) => 
+    apiClient<any>(`/climate/coordinates?lat=${lat}&lng=${lng}`),
 };
 
 export const ritClient = {
-  chat: (message: string, localityId: string, conversationId?: string) => 
+  chat: (message: string, localityId: string, conversationId?: string, lat?: number, lng?: number) => 
     apiClient<any>(`/rit/chat`, {
       method: 'POST',
-      body: JSON.stringify({ message, localityId, conversationId })
+      body: JSON.stringify({ message, localityId, conversationId, lat, lng })
     }),
 
   getInsights: (localityId: string) => 

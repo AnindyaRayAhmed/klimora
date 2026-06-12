@@ -10,7 +10,7 @@ export type ChatMessage = {
 };
 
 export function useRitChat() {
-  const { ritActiveConversationId, setRitActiveConversationId, selectedLocalityId } = useAppStore();
+  const { ritActiveConversationId, setRitActiveConversationId, selectedLocalityId, detectedCoordinates } = useAppStore();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [thinking, setThinking] = useState(false);
   const [insights, setInsights] = useState<any[]>([]);
@@ -38,6 +38,11 @@ export function useRitChat() {
     if (!selectedLocalityId) return;
 
     const fetchInsights = () => {
+      if (selectedLocalityId === "dynamic") {
+        // Skip fetching predefined DB insights for dynamic locations for MVP
+        setInsights([]);
+        return;
+      }
       ritClient.getInsights(selectedLocalityId).then(res => {
         setInsights(res.data || []);
       }).catch(console.error);
@@ -56,7 +61,10 @@ export function useRitChat() {
     setThinking(true);
 
     try {
-      const res = await ritClient.chat(text, selectedLocalityId, ritActiveConversationId || undefined);
+      const lat = selectedLocalityId === "dynamic" ? detectedCoordinates?.lat : undefined;
+      const lng = selectedLocalityId === "dynamic" ? detectedCoordinates?.lng : undefined;
+
+      const res = await ritClient.chat(text, selectedLocalityId, ritActiveConversationId || undefined, lat, lng);
       
       if (!ritActiveConversationId && res.conversationId) {
         setRitActiveConversationId(res.conversationId);
