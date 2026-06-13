@@ -9,37 +9,73 @@ const frontendLocalityMap: Record<string, Partial<Locality>> = {
 };
 
 export function adaptClimateScoreToLocality(localityRaw: any, scoreRaw: any): Locality {
-  const base = frontendLocalityMap[localityRaw.slug] || mockLocalities[0];
+  const isDynamic = localityRaw.slug?.startsWith('dynamic') || localityRaw.id === 'dynamic';
+  
+  const dynamicBase: Locality = {
+    id: localityRaw.slug || "dynamic",
+    name: localityRaw.name || "Dynamic Location",
+    boundary: "Live GPS Reading",
+    ward: "Local Area",
+    city: localityRaw.city || "Unknown City",
+    pin: { left: "0%", top: "0%" },
+    coordinates: { lat: localityRaw.latitude || 0, lng: localityRaw.longitude || 0 },
+    climateScore: scoreRaw.score || 50,
+    scoreDelta: 0,
+    heatRisk: { value: 0, label: "Low" },
+    airQuality: { aqi: 0, label: "No data" },
+    vegetation: { ndvi: 0, label: "No data" },
+    rainfall: { mm: 0, label: "No data", delta: 0 },
+    temperature: { value: 0, delta: 0 },
+    trend: "stable",
+    recommendedActions: [],
+    context: "Live geocoded coordinate location."
+  };
+
+  const base = isDynamic ? dynamicBase : (frontendLocalityMap[localityRaw.slug] || mockLocalities[0]);
   
   return {
     ...base,
     id: localityRaw.slug,
     name: localityRaw.name,
     city: localityRaw.city,
-    climateScore: scoreRaw.score,
-    scoreDelta: 0, 
-    trend: scoreRaw.trend,
+    climateScore: scoreRaw.score ?? base.climateScore,
+    scoreDelta: isDynamic ? 0 : base.scoreDelta, 
+    trend: scoreRaw.trend || base.trend,
     temperature: {
-      value: scoreRaw.metrics?.temperatureC || base.temperature.value,
+      value: scoreRaw.metrics?.temperatureC !== undefined && scoreRaw.metrics?.temperatureC !== null 
+        ? scoreRaw.metrics.temperatureC 
+        : base.temperature.value,
       delta: 0 
     },
     airQuality: {
-      aqi: scoreRaw.metrics?.aqi || base.airQuality.aqi,
+      aqi: scoreRaw.metrics?.aqi !== undefined && scoreRaw.metrics?.aqi !== null 
+        ? scoreRaw.metrics.aqi 
+        : base.airQuality.aqi,
       label: scoreRaw.breakdown?.find((b:any) => b.label === 'AQI')?.reason || base.airQuality.label
     },
     vegetation: {
-      ndvi: scoreRaw.metrics?.ndvi || base.vegetation.ndvi,
+      ndvi: scoreRaw.metrics?.ndvi !== undefined && scoreRaw.metrics?.ndvi !== null 
+        ? scoreRaw.metrics.ndvi 
+        : base.vegetation.ndvi,
       label: scoreRaw.breakdown?.find((b:any) => b.label === 'Vegetation')?.reason || base.vegetation.label
     },
     rainfall: {
-      mm: scoreRaw.metrics?.rainfallMm || base.rainfall.mm,
-      delta: scoreRaw.metrics?.rainfallAnomalyPct || base.rainfall.delta,
+      mm: scoreRaw.metrics?.rainfallMm !== undefined && scoreRaw.metrics?.rainfallMm !== null 
+        ? scoreRaw.metrics.rainfallMm 
+        : base.rainfall.mm,
+      delta: scoreRaw.metrics?.rainfallAnomalyPct !== undefined && scoreRaw.metrics?.rainfallAnomalyPct !== null 
+        ? scoreRaw.metrics.rainfallAnomalyPct 
+        : base.rainfall.delta,
       label: scoreRaw.breakdown?.find((b:any) => b.label === 'Rainfall')?.reason || base.rainfall.label
     },
     heatRisk: {
-      value: scoreRaw.metrics?.heatIndexC ? Math.round((scoreRaw.metrics.heatIndexC / 50) * 100) : base.heatRisk.value,
+      value: scoreRaw.metrics?.heatIndexC !== undefined && scoreRaw.metrics?.heatIndexC !== null 
+        ? Math.round((scoreRaw.metrics.heatIndexC / 50) * 100) 
+        : base.heatRisk.value,
       label: scoreRaw.breakdown?.find((b:any) => b.label === 'Heat Risk')?.reason || base.heatRisk.label
-    }
+    },
+    recommendedActions: isDynamic ? [] : base.recommendedActions,
+    context: isDynamic ? `Live climate analysis for ${localityRaw.city || 'your coordinates'}.` : base.context
   } as Locality;
 }
 

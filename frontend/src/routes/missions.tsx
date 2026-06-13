@@ -188,7 +188,7 @@ function MissionsPage() {
             </div>
             <div className="flex-1 min-w-0 relative">
               <div className="text-[11px] uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                <MapPin className="h-3 w-3" /> Tailored to {activeLocalityData.name}
+                <MapPin className="h-3 w-3" /> Tailored to {activeLocalityData?.name || "your location"}
               </div>
               <h2 className="text-base md:text-lg font-semibold mt-1">Recommended Missions for Your Locality</h2>
               <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
@@ -238,7 +238,7 @@ function MissionsPage() {
                 m={m} 
                 recommended={recommendedIds.has(m.id)} 
                 explanation={recommendationDetails[m.id]}
-                localityName={activeLocalityData.name} 
+                localityName={activeLocalityData?.name || "your location"} 
               />
             ))}
           </div>

@@ -18,14 +18,20 @@ export class ContextAssemblerService {
 
     let lat = query.lat || 0;
     let lon = query.lng || 0;
-    
-    if (query.localityId !== "dynamic" && !query.localityId.startsWith("dynamic-")) {
+
+    const isDynamic = query.localityId === "dynamic" || query.localityId.startsWith("dynamic-");
+    if (isDynamic) {
+      console.log("[Rit Dynamic] Skipping locality DB lookup");
+    }
+
+    if (!isDynamic) {
       const coords = await this.ritTools.getLocalityCoordinates(query.localityId);
       if (coords) {
         lat = coords.latitude ? Number(coords.latitude) : lat;
         lon = coords.longitude ? Number(coords.longitude) : lon;
       }
     } else if (lat && lon) {
+      console.log(`[Rit Dynamic] Coordinates received: lat=${lat}, lng=${lon}`);
       // It's a dynamic query, let's reverse geocode to get city context
       try {
         const mapsClient = new GoogleMapsClient();
@@ -36,7 +42,12 @@ export class ContextAssemblerService {
             locationMeta.address_components.find((c: any) => c.types.includes(type))?.long_name;
           city = getComponent("locality") || getComponent("administrative_area_level_2") || city;
         }
+        console.log(`[Rit Dynamic] Reverse geocoded city: ${city}`);
+        console.log("[Rit Dynamic] Using coordinate-native context");
         packet.dynamicLocation = { lat, lng: lon, city };
+        
+        // Save geocoded city context to the conversation in DB
+        await this.memoryService.updateConversationCity(conversationId, city);
       } catch (e) {
         console.error("Failed to reverse geocode dynamic location for Rit:", e);
       }

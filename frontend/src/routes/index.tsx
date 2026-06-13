@@ -113,13 +113,19 @@ function ClimateDashboard() {
                  <div className="h-48 bg-muted/20 rounded-2xl"></div>
                  <div className="h-32 bg-muted/20 rounded-2xl"></div>
                </div>
+            ) : !activeLocalityData ? (
+              <div className="h-full flex flex-col items-center justify-center text-center p-8 text-muted-foreground space-y-3 mt-12">
+                <Search className="h-10 w-10 opacity-20 mb-2" />
+                <p className="text-sm font-medium">No location selected</p>
+                <p className="text-xs max-w-[200px]">Search for your locality or select a pin on the map to view climate intelligence.</p>
+              </div>
             ) : (
               <>
                 <ClimateHealthCard locality={activeLocalityData} />
                 <ScoreBreakdown locality={activeLocalityData} />
                 <ForecastCard locality={activeLocalityData} />
                 <LocalityInsights locality={activeLocalityData} />
-                <ClimateTimeline />
+                {selectedLocalityId !== "dynamic" && <ClimateTimeline />}
               </>
             )}
 

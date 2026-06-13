@@ -53,11 +53,16 @@ export class MemoryService {
       if (data) return data.id;
     }
 
+    const isDynamic = localityId === "dynamic" || localityId.startsWith("dynamic-");
+    if (isDynamic) {
+      console.log("[Rit Dynamic] Skipping locality DB lookup for conversation creation");
+    }
+
     const { data: newConv, error } = await this.supabase
       .from("rit_conversations")
       .insert({
         user_id: userId,
-        locality_id: localityId,
+        locality_id: isDynamic ? null : localityId,
         title: "New Conversation",
         metadata: { discussedTopics: [], recentSummary: "" },
         created_at: new Date().toISOString(),
@@ -71,5 +76,12 @@ export class MemoryService {
     }
     
     return newConv.id;
+  }
+
+  async updateConversationCity(conversationId: string, city: string) {
+    await this.supabase
+      .from("rit_conversations")
+      .update({ context_city: city })
+      .eq("id", conversationId);
   }
 }

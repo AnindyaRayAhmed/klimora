@@ -92,8 +92,8 @@ export function MapCanvas({ layer, selectedId, onLocationClick, localitiesOverri
     const initMap = () => {
       if (!mapRef.current || !(window as any).google) return;
       mapInstanceRef.current = new (window as any).google.maps.Map(mapRef.current, {
-        center: { lat: 12.9716, lng: 77.5946 }, // Bengaluru center
-        zoom: 11.5,
+        center: { lat: 20.5937, lng: 78.9629 }, // India center
+        zoom: 4.5,
         disableDefaultUI: true,
         backgroundColor: '#0a1f1c', // Klimora dark background
         styles: [
@@ -149,9 +149,13 @@ export function MapCanvas({ layer, selectedId, onLocationClick, localitiesOverri
   return (
     <div className="relative h-full w-full overflow-hidden bg-[oklch(0.13_0.025_225)]">
       {/* Real Google Maps Basemap */}
-      <div ref={mapRef} className="absolute inset-0 h-full w-full z-0 opacity-30 mix-blend-luminosity" />
-      {/* Base map tiles — abstract topo grid */}
-      <svg className="absolute inset-0 h-full w-full opacity-[0.22]" xmlns="http://www.w3.org/2000/svg">
+      <div ref={mapRef} className={`absolute inset-0 h-full w-full z-0 transition-opacity ${selectedId === "dynamic" ? "opacity-100" : "opacity-30 mix-blend-luminosity"}`} />
+      
+      {/* Static Demo Overlays */}
+      {selectedId !== "dynamic" && (
+        <>
+          {/* Base map tiles — abstract topo grid */}
+          <svg className="absolute inset-0 h-full w-full opacity-[0.22] pointer-events-none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
             <path d="M 48 0 L 0 0 0 48" fill="none" stroke="oklch(0.45 0.04 225)" strokeWidth="0.5" />
@@ -211,9 +215,11 @@ export function MapCanvas({ layer, selectedId, onLocationClick, localitiesOverri
           }}
         />
       ))}
+      </>
+      )}
 
       {/* Location pins */}
-      {(localitiesOverride || localities).map((p: any) => {
+      {selectedId !== "dynamic" && (localitiesOverride || localities).map((p: any) => {
         const active = selectedId === p.id;
         return (
           <button
@@ -246,6 +252,28 @@ export function MapCanvas({ layer, selectedId, onLocationClick, localitiesOverri
           </button>
         );
       })}
+
+      {/* Dynamic Mode: You Are Here Marker */}
+      {selectedId === "dynamic" && detectedCoordinates && (
+        <div 
+          className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none group z-10"
+          style={{ 
+            left: "50%", 
+            top: "50%" // Centered because map pans to it
+          }}
+        >
+          <div className="relative flex items-center justify-center">
+            <span
+              className="absolute h-8 w-8 rounded-full animate-ping"
+              style={{ background: "var(--primary)", opacity: 0.2 }}
+            />
+            <div className="h-4 w-4 rounded-full border-2 border-white drop-shadow-md" style={{ background: "var(--primary)" }} />
+          </div>
+          <div className="absolute left-1/2 -translate-x-1/2 -top-8 px-2.5 py-1 rounded-md glass-strong text-[10px] font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+            You are here
+          </div>
+        </div>
+      )}
 
       {/* Map controls */}
       <div className="absolute right-4 bottom-6 flex flex-col gap-2">
@@ -286,8 +314,8 @@ export function MapCanvas({ layer, selectedId, onLocationClick, localitiesOverri
                   mapInstanceRef.current.setCenter(targetLoc.coordinates);
                   mapInstanceRef.current.setZoom(13.5);
                 } else {
-                  mapInstanceRef.current.setCenter({ lat: 12.9716, lng: 77.5946 });
-                  mapInstanceRef.current.setZoom(11.5);
+                  mapInstanceRef.current.setCenter({ lat: 20.5937, lng: 78.9629 });
+                  mapInstanceRef.current.setZoom(4.5);
                 }
               }
             }

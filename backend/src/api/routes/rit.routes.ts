@@ -104,6 +104,9 @@ export async function registerRitRoutes(app: FastifyInstance): Promise<void> {
     protectedApp.get("/insights", async (request, reply) => {
       const userId = request.user!.id;
       const query = z.object({ localityId: z.string() }).parse(request.query);
+      if (query.localityId === "dynamic" || query.localityId.startsWith("dynamic-")) {
+        return { data: [] };
+      }
       const locality = await localitiesService.getLocalityBySlugOrId(query.localityId);
       const insights = await ritInsightService.getActiveInsights(locality.id, userId);
       return { data: insights };

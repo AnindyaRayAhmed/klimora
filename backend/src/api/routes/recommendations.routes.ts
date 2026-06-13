@@ -46,6 +46,9 @@ export async function registerRecommendationRoutes(app: FastifyInstance): Promis
 
   app.get("/", async (request, reply) => {
     const query = querySchema.parse(request.query);
+    if (query.localityId === "dynamic" || query.localityId.startsWith("dynamic-")) {
+      return { data: [] };
+    }
     const locality = await localitiesService.getLocalityBySlugOrId(query.localityId);
     const data = await recommendationAgent.getRecommendations(locality.id, query.userId);
     return { data };
@@ -53,6 +56,9 @@ export async function registerRecommendationRoutes(app: FastifyInstance): Promis
 
   app.get("/locality/:id", async (request, reply) => {
     const params = localityParamSchema.parse(request.params);
+    if (params.id === "dynamic" || params.id.startsWith("dynamic-")) {
+      return { data: [] };
+    }
     const locality = await localitiesService.getLocalityBySlugOrId(params.id);
     const data = await recommendationAgent.getRecommendations(locality.id);
     return { data };
@@ -70,6 +76,9 @@ export async function registerRecommendationRoutes(app: FastifyInstance): Promis
 
       // User route usually needs a localityId, let's assume it's passed in query
       const query = z.object({ localityId: z.string() }).parse(request.query);
+      if (query.localityId === "dynamic" || query.localityId.startsWith("dynamic-")) {
+        return { data: [] };
+      }
       const locality = await localitiesService.getLocalityBySlugOrId(query.localityId);
       const data = await recommendationAgent.getRecommendations(locality.id, params.id);
       return { data };

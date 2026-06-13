@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAppStore } from "@/store";
+import { climateClient } from "@/lib/api/domains.client";
 import { Camera, Video, MapPin, FileText, CheckCircle2, Upload, Trees, Bike, Users, ShieldAlert, Sparkles, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { VerificationBadge } from "@/components/VerificationBadge";
@@ -65,6 +67,68 @@ function SubmitPage() {
   const [submitted, setSubmitted] = useState(false);
   const [species, setSpecies] = useState<string>(SPECIES_OPTIONS[0]);
   const [otherSpecies, setOtherSpecies] = useState<string>("");
+
+  const { detectedCoordinates, setDetectedCoordinates } = useAppStore();
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(detectedCoordinates);
+  const [locationText, setLocationText] = useState<string>("Detecting location...");
+  const [isLocating, setIsLocating] = useState(false);
+  const [locError, setLocError] = useState<string | null>(null);
+
+  const refreshLocation = () => {
+    console.log("[Submission] Refreshing geolocation");
+    setIsLocating(true);
+    setLocError(null);
+    
+    if (!navigator.geolocation) {
+      setLocError("Location unavailable");
+      setIsLocating(false);
+      return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        console.log("[Submission] Coordinates updated", latitude, longitude);
+        setDetectedCoordinates({ lat: latitude, lng: longitude });
+        setCoords({ lat: latitude, lng: longitude });
+        
+        climateClient.getDynamicScore(latitude, longitude).then(res => {
+          const city = res.data?.city || res.data?.name || "Unknown Location";
+          const state = res.data?.state || "";
+          const fullLoc = state ? `${city}, ${state}` : city;
+          console.log("[Submission] Reverse geocoded location updated:", fullLoc);
+          setLocationText(fullLoc);
+          setIsLocating(false);
+        }).catch(err => {
+          console.error(err);
+          setLocationText(`${latitude.toFixed(4)}°N, ${longitude.toFixed(4)}°E`);
+          setIsLocating(false);
+        });
+      },
+      (err) => {
+        console.error(err);
+        setLocError("Enable location access");
+        setIsLocating(false);
+      },
+      { timeout: 8000 }
+    );
+  };
+
+  useEffect(() => {
+    if (detectedCoordinates) {
+      setCoords(detectedCoordinates);
+      climateClient.getDynamicScore(detectedCoordinates.lat, detectedCoordinates.lng).then(res => {
+        const city = res.data?.city || res.data?.name || "Unknown Location";
+        const state = res.data?.state || "";
+        const fullLoc = state ? `${city}, ${state}` : city;
+        setLocationText(fullLoc);
+      }).catch(() => {
+        setLocationText(`${detectedCoordinates.lat.toFixed(4)}°N, ${detectedCoordinates.lng.toFixed(4)}°E`);
+      });
+    } else {
+      refreshLocation();
+    }
+  }, []);
 
   if (isLoading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (!user) return <Navigate to="/login" replace />;
@@ -213,12 +277,25 @@ function SubmitPage() {
                 <MapPin className="h-3.5 w-3.5" /> Location
               </label>
               <div className="flex items-center gap-2 px-4 py-3 rounded-xl glass">
-                <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
+                <div className={`h-2 w-2 rounded-full ${locError ? "bg-destructive" : coords ? "bg-success animate-pulse" : "bg-warning animate-pulse"}`} />
                 <div className="flex-1">
-                  <div className="text-sm font-medium">Indiranagar, Bengaluru</div>
-                  <div className="text-[11px] text-muted-foreground">12.9716°N, 77.6411°E • ±8m accuracy</div>
+                  <div className="text-sm font-medium">
+                    {locError ? locError : isLocating ? "Detecting location..." : locationText}
+                  </div>
+                  {coords && !locError && (
+                    <div className="text-[11px] text-muted-foreground">
+                      {coords.lat.toFixed(4)}°N, {coords.lng.toFixed(4)}°E • ±8m accuracy
+                    </div>
+                  )}
                 </div>
-                <button type="button" className="text-xs text-primary font-medium">Refresh</button>
+                <button 
+                  type="button" 
+                  onClick={refreshLocation} 
+                  disabled={isLocating}
+                  className="text-xs text-primary font-medium disabled:opacity-50"
+                >
+                  {isLocating ? "Refreshing..." : "Refresh"}
+                </button>
               </div>
             </div>
           )}
@@ -228,13 +305,15 @@ function SubmitPage() {
               <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 block">Route tracking</label>
               <div className="px-4 py-3 rounded-xl glass">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm">Indiranagar → MG Road</span>
-                  <span className="text-xs text-primary font-medium">4.2 km</span>
+                  <span className="text-sm">
+                    {isLocating ? "Detecting route..." : locError ? "Route unavailable" : `${locationText} area`}
+                  </span>
+                  <span className="text-xs text-primary font-medium">Active</span>
                 </div>
                 <div className="h-2 rounded-full bg-sidebar-accent overflow-hidden">
                   <div className="h-full w-3/4 rounded-full" style={{ background: "var(--gradient-forest)" }} />
                 </div>
-                <div className="text-[11px] text-muted-foreground mt-1.5">GPS route captured • Metro line confirmed</div>
+                <div className="text-[11px] text-muted-foreground mt-1.5">GPS route captured • Low-emission corridor confirmed</div>
               </div>
             </div>
           )}

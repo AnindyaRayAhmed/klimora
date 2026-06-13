@@ -32,6 +32,9 @@ export class RitToolsService {
   }
 
   async getLatestClimateScore(localityId: string) {
+    if (localityId === "dynamic" || localityId.startsWith("dynamic-")) {
+      return null;
+    }
     try {
       return await this.climateScoreService.getLatestForLocality(localityId);
     } catch {
@@ -46,6 +49,9 @@ export class RitToolsService {
     } catch (e) {
       console.warn("Live forecast failed, falling back to stored");
     }
+    if (localityId === "dynamic" || localityId.startsWith("dynamic-")) {
+      return { source: "stored", data: [] };
+    }
     try {
       const stored = await this.forecastsService.getForecastsForLocality(localityId, 5);
       return { source: "stored", data: stored };
@@ -55,18 +61,21 @@ export class RitToolsService {
   }
 
   async getFreshNDVI(localityId: string, lat: number, lon: number) {
-    const score = await this.getLatestClimateScore(localityId);
-    if (score && score.metrics.ndviTimestamp) {
-      const ageHours = (Date.now() - new Date(score.metrics.ndviTimestamp).getTime()) / (1000 * 60 * 60);
-      if (ageHours < 24) {
-        return { value: score.metrics.ndvi, source: "stored_cache", timestamp: score.metrics.ndviTimestamp };
+    const isDynamic = localityId === "dynamic" || localityId.startsWith("dynamic-");
+    if (!isDynamic) {
+      const score = await this.getLatestClimateScore(localityId);
+      if (score && score.metrics.ndviTimestamp) {
+        const ageHours = (Date.now() - new Date(score.metrics.ndviTimestamp).getTime()) / (1000 * 60 * 60);
+        if (ageHours < 24) {
+          return { value: score.metrics.ndvi, source: "stored_cache", timestamp: score.metrics.ndviTimestamp };
+        }
       }
     }
     try {
       const ndvi = await this.planet.getNdviForLocation(lat, lon);
       return ndvi;
     } catch (e) {
-      return { value: score?.metrics?.ndvi || 0, source: "stored_fallback" };
+      return { value: 0, source: "stored_fallback" };
     }
   }
 
@@ -79,6 +88,9 @@ export class RitToolsService {
   }
 
   async getRecommendations(localityId: string, userId: string) {
+    if (localityId === "dynamic" || localityId.startsWith("dynamic-")) {
+      return [];
+    }
     try {
       return await this.recommendationAgentService.getRecommendations(localityId, userId);
     } catch {
@@ -118,6 +130,9 @@ export class RitToolsService {
   }
 
   async getCommunityImpact(localityId: string) {
+    if (localityId === "dynamic" || localityId.startsWith("dynamic-")) {
+      return { verifiedMissionsCount: 0 };
+    }
     const { count } = await this.supabase
       .from("mission_submissions")
       .select("*", { count: "exact", head: true })
@@ -130,6 +145,9 @@ export class RitToolsService {
   }
 
   async getClimateTrendNarrative(localityId: string): Promise<string> {
+    if (localityId === "dynamic" || localityId.startsWith("dynamic-")) {
+      return "Live coordinate reading — trend history not tracked.";
+    }
     try {
       const history = await this.climateScoreService.getHistoryForLocality(localityId, 30);
       if (history.length < 2) return "Insufficient data for trend analysis.";

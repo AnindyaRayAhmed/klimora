@@ -38,7 +38,7 @@ export function useRitChat() {
     if (!selectedLocalityId) return;
 
     const fetchInsights = () => {
-      if (selectedLocalityId === "dynamic") {
+      if (selectedLocalityId === "dynamic" || selectedLocalityId.startsWith("dynamic-")) {
         // Skip fetching predefined DB insights for dynamic locations for MVP
         setInsights([]);
         return;

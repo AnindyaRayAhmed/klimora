@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react';
 import { localitiesClient, climateClient } from '../lib/api/domains.client';
 import { adaptClimateScoreToLocality } from '../lib/api/adapters';
 import { useAppStore } from '../store';
-import { type Locality, defaultLocality } from '../lib/ui-constants';
+import { type Locality } from '../lib/ui-constants';
 
 export function useDashboardIntelligence() {
   const { selectedLocalityId, setSelectedLocalityId, detectedCoordinates, setDetectedCoordinates } = useAppStore();
   
   const [localitiesRaw, setLocalitiesRaw] = useState<any[]>([]);
-  const [activeLocalityData, setActiveLocalityData] = useState<Locality>(defaultLocality);
+  const [activeLocalityData, setActiveLocalityData] = useState<Locality | null>(null);
   const [localitiesWithPins, setLocalitiesWithPins] = useState<Locality[]>([]);
   const [loadingInitial, setLoadingInitial] = useState(true);
   const [isHydratingScore, setIsHydratingScore] = useState(false);
@@ -33,15 +33,13 @@ export function useDashboardIntelligence() {
               setLoadingInitial(false);
             },
             (error) => {
-              console.warn("[Geolocation] Fallback triggered:", error.message, "Using:", mapped[0].id);
-              setSelectedLocalityId(mapped[0].id);
+              console.warn("[Geolocation] Fallback triggered:", error.message, "Using neutral state");
               setLoadingInitial(false);
             },
             { timeout: 8000 }
           );
         } else {
-          console.warn("[Geolocation] Not supported by browser. Using default:", mapped[0].id);
-          setSelectedLocalityId(mapped[0].id);
+          console.warn("[Geolocation] Not supported by browser. Using neutral state");
           setLoadingInitial(false);
         }
       } else {
@@ -75,7 +73,7 @@ export function useDashboardIntelligence() {
           const frontendObj = adaptClimateScoreToLocality(dynamicLocality, scoreRes.data);
           setActiveLocalityData(frontendObj);
         } else {
-          const locRaw = localitiesRaw.find(l => l.slug === selectedLocalityId) || localitiesRaw[0];
+          const locRaw = localitiesRaw.find(l => l.slug === selectedLocalityId);
           if (!locRaw) return;
           console.log("[Climate Data] Fetching locality score for", locRaw.slug);
           const scoreRes = await climateClient.getLocalityScore(locRaw.slug);

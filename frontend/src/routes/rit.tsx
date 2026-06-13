@@ -8,7 +8,7 @@ import { useDashboardIntelligence } from "@/hooks/use-climate";
 import { useRitChat } from "@/hooks/use-rit";
 
 const searchSchema = z.object({
-  locality: z.enum(["indiranagar", "koramangala", "jayanagar", "hsr", "whitefield"]).optional(),
+  locality: z.string().optional(),
 });
 
 export const Route = createFileRoute("/rit")({
@@ -43,6 +43,10 @@ function RitPage() {
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const locationName = (!activeLocalityData || activeLocalityData.name === "Dynamic Location") 
+    ? "your location" 
+    : activeLocalityData.name;
+
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, thinking]);
@@ -69,15 +73,21 @@ function RitPage() {
               </div>
               <div className="text-xs text-muted-foreground flex items-center gap-1 truncate">
                 <MapPin className="h-3 w-3" />
-                Context: <span className="text-foreground font-medium truncate">{activeLocalityData.name}</span>
+                Context: <span className="text-foreground font-medium truncate">{locationName}</span>
               </div>
             </div>
             <select
               value={selectedLocalityId || ""}
-              onChange={(e) => setSelectedLocalityId(e.target.value)}
+              onChange={(e) => setSelectedLocalityId(e.target.value || null)}
               className="glass rounded-lg text-xs px-2 py-1.5 bg-transparent outline-none"
               aria-label="Switch locality"
             >
+              {!selectedLocalityId && (
+                <option value="" className="bg-background">Select a location...</option>
+              )}
+              {selectedLocalityId === "dynamic" && (
+                <option value="dynamic" className="bg-background">Dynamic Location</option>
+              )}
               {localitiesRaw.map((l) => (
                 <option key={l.id} value={l.id} className="bg-background">{l.name}</option>
               ))}
@@ -112,7 +122,7 @@ function RitPage() {
                   <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-pulse" />
                   <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-pulse [animation-delay:200ms]" />
                   <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-pulse [animation-delay:400ms]" />
-                  <span className="text-xs text-muted-foreground ml-2">Rit is analysing {activeLocalityData.name}…</span>
+                  <span className="text-xs text-muted-foreground ml-2">Rit is analysing {locationName}…</span>
                 </div>
               </div>
             )}
@@ -141,7 +151,7 @@ function RitPage() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(input); } }}
-                placeholder={`Ask Rit about ${activeLocalityData.name}…`}
+                placeholder={`Ask Rit about ${locationName}…`}
                 rows={1}
                 className="flex-1 bg-transparent outline-none px-2 py-2 text-sm resize-none max-h-32"
               />
@@ -176,13 +186,13 @@ function RitPage() {
 
           <div className="glass-strong rounded-2xl p-5">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Environmental Context</h3>
-            <div className="text-sm font-semibold mb-3">{activeLocalityData.name}</div>
+            <div className="text-sm font-semibold mb-3">{locationName}</div>
             <div className="grid grid-cols-2 gap-2">
               {[
-                { icon: Thermometer, label: "Temp", value: `${activeLocalityData.temperature.value}°C`, token: "heat" },
-                { icon: Wind, label: "AQI", value: activeLocalityData.airQuality.aqi, token: "aqi" },
-                { icon: Trees, label: "NDVI", value: activeLocalityData.vegetation.ndvi.toFixed(2), token: "vegetation" },
-                { icon: CloudRain, label: "Rain", value: `${activeLocalityData.rainfall.mm}mm`, token: "rainfall" },
+                { icon: Thermometer, label: "Temp", value: activeLocalityData ? `${activeLocalityData.temperature.value}°C` : "--", token: "heat" },
+                { icon: Wind, label: "AQI", value: activeLocalityData ? activeLocalityData.airQuality.aqi : "--", token: "aqi" },
+                { icon: Trees, label: "NDVI", value: activeLocalityData ? activeLocalityData.vegetation.ndvi.toFixed(2) : "--", token: "vegetation" },
+                { icon: CloudRain, label: "Rain", value: activeLocalityData ? `${activeLocalityData.rainfall.mm}mm` : "--", token: "rainfall" },
               ].map(({ icon: Icon, label, value, token }) => (
                 <div key={label} className="glass rounded-lg p-2.5">
                   <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
