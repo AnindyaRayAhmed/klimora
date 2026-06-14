@@ -76,6 +76,7 @@ export function MapCanvas({ layer, selectedId, onLocationClick, localitiesOverri
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const { detectedCoordinates } = useAppStore();
+  const [mapReady, setMapReady] = useState(false);
 
   const config = layerConfig[layer] || layerConfig["climate"];
   const color = config.color;
@@ -109,7 +110,8 @@ export function MapCanvas({ layer, selectedId, onLocationClick, localitiesOverri
       });
 
       (window as any).google.maps.event.addListenerOnce(mapInstanceRef.current, 'tilesloaded', () => {
-        console.log('[Map] Map ready');
+        console.log('[Map Debug] mapReady');
+        setMapReady(true);
       });
     };
 
@@ -135,12 +137,12 @@ export function MapCanvas({ layer, selectedId, onLocationClick, localitiesOverri
   }, []);
 
   useEffect(() => {
-    if (mapInstanceRef.current && selectedId) {
+    if (mapInstanceRef.current && selectedId && mapReady) {
       if (selectedId === "dynamic" && detectedCoordinates) {
-        console.log(`[Map] Dynamic coordinates received:`, detectedCoordinates);
-        console.log(`[Map] Panning to detected location`);
+        console.log(`[Map Debug] coordinates changed:`, detectedCoordinates);
+        console.log(`[Map Debug] panTo executing`);
         mapInstanceRef.current.panTo(detectedCoordinates);
-        console.log(`[Map] Applying locality zoom`);
+        console.log(`[Map Debug] setZoom executing`);
         mapInstanceRef.current.setZoom(15);
       } else {
         const locList = localitiesOverride || localities;
@@ -151,7 +153,7 @@ export function MapCanvas({ layer, selectedId, onLocationClick, localitiesOverri
         }
       }
     }
-  }, [selectedId, localitiesOverride, detectedCoordinates]);
+  }, [selectedId, localitiesOverride, detectedCoordinates, mapReady]);
 
   return (
     <div className="relative h-full w-full overflow-hidden bg-[oklch(0.13_0.025_225)]">

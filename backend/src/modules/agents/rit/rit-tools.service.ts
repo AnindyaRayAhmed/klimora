@@ -42,6 +42,34 @@ export class RitToolsService {
     }
   }
 
+  async getDynamicClimateScore(lat: number, lon: number, city: string) {
+    console.log("[Rit Debug] Using coordinate-native context for climate score");
+    try {
+      const [weatherData, aqiData, ndviData] = await Promise.all([
+        this.openWeather.getCurrentWeather(lat, lon).catch(() => null),
+        this.openWeather.getAirQuality(lat, lon).catch(() => null),
+        this.planet.getNdviForLocation(lat, lon).catch(() => null),
+      ]);
+
+      return {
+        score: 50, // default placeholder, the intent is just context
+        label: "Dynamic",
+        trend: "stable",
+        metrics: {
+          temperatureC: weatherData?.temp ?? null,
+          aqi: aqiData?.aqi ?? null,
+          ndvi: ndviData?.ndvi ?? null,
+          rainfallMm: null,
+          rainfallAnomalyPct: null
+        },
+        breakdown: []
+      };
+    } catch (e) {
+      console.warn("Dynamic climate score assembly failed in RitTools");
+      return null;
+    }
+  }
+
   async getLiveForecast(localityId: string, lat: number, lon: number) {
     try {
       const live = await this.openWeather.getForecast(lat, lon);

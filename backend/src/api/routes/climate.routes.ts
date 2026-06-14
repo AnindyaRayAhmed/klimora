@@ -61,6 +61,7 @@ export async function registerClimateRoutes(app: FastifyInstance): Promise<void>
   });
 
   app.get("/coordinates", async (request) => {
+    console.log("[Climate Debug] route hit");
     const query = coordinateQuerySchema.parse(request.query);
     
     console.log("[Dynamic Climate] Verifying Cloud Run environment variables for OpenWeather, Planet/Sentinel, and Google Maps");
@@ -86,15 +87,22 @@ export async function registerClimateRoutes(app: FastifyInstance): Promise<void>
     }
     
     console.log(`[Dynamic Climate] Reverse geocoded city: ${city}`);
+    console.log("[Climate Debug] reverse geocode success");
 
     // 2. Fetch live data
     const openWeather = new OpenWeatherClient();
     const planet = new PlanetClient();
 
     const [weatherData, aqiData, ndviData] = await Promise.all([
-      openWeather.getCurrentWeather(query.lat, query.lng),
-      openWeather.getAirQuality(query.lat, query.lng),
-      planet.getNdviForLocation(query.lat, query.lng),
+      openWeather.getCurrentWeather(query.lat, query.lng)
+        .then(res => { console.log("[Climate Debug] OpenWeather success/failure - success"); return res; })
+        .catch(err => { console.log("[Climate Debug] OpenWeather success/failure - failure", err); return null; }),
+      openWeather.getAirQuality(query.lat, query.lng)
+        .then(res => { console.log("[Climate Debug] OpenWeather AQI success"); return res; })
+        .catch(err => { console.log("[Climate Debug] OpenWeather AQI failure", err); return null; }),
+      planet.getNdviForLocation(query.lat, query.lng)
+        .then(res => { console.log("[Climate Debug] Planet success/failure - success"); return res; })
+        .catch(err => { console.log("[Climate Debug] Planet success/failure - failure", err); return null; }),
     ]);
 
     // 3. Normalize
@@ -123,7 +131,7 @@ export async function registerClimateRoutes(app: FastifyInstance): Promise<void>
     const result = engine.compute(snapshot, { current90DayAvg: null, prev90DayAvg: null }, confidences);
 
     // 5. Construct Response
-    return {
+    const finalPayload = {
       data: {
         id: dynamicId,
         slug: dynamicId,
@@ -151,5 +159,8 @@ export async function registerClimateRoutes(app: FastifyInstance): Promise<void>
         computedAt: new Date().toISOString()
       }
     };
+    
+    console.log("[Climate Debug] final payload");
+    return finalPayload;
   });
 }

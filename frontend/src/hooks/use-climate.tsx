@@ -88,9 +88,9 @@ export function useDashboardIntelligence() {
             longitude: detectedCoordinates.lng
           }, {}));
 
-          console.log("[Dynamic Climate] Fetching climate profile");
+          console.log("[Climate Debug] requesting dynamic score");
           const scoreRes = await climateClient.getDynamicScore(detectedCoordinates.lat, detectedCoordinates.lng);
-          console.log("[Dynamic Climate] Climate payload received");
+          console.log("[Climate Debug] payload received");
           
           const dynamicLocality = {
             id: scoreRes.data.id,
