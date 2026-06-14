@@ -75,6 +75,7 @@ export function MapCanvas({ layer, selectedId, onLocationClick, localitiesOverri
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
+  const userOverlayRef = useRef<any>(null);
   const { detectedCoordinates } = useAppStore();
   const [mapReady, setMapReady] = useState(false);
 
@@ -135,6 +136,78 @@ export function MapCanvas({ layer, selectedId, onLocationClick, localitiesOverri
       }
     }
   }, []);
+
+  // Handle dynamic user marker OverlayView
+  useEffect(() => {
+    if (!mapInstanceRef.current || !mapReady) return;
+
+    if (selectedId === "dynamic" && detectedCoordinates) {
+      if (!userOverlayRef.current) {
+        class CustomMarkerOverlay extends (window as any).google.maps.OverlayView {
+          position: any;
+          div: HTMLDivElement | null;
+
+          constructor(position: any) {
+            super();
+            this.position = position;
+            this.div = null;
+          }
+
+          onAdd() {
+            this.div = document.createElement('div');
+            this.div.className = "absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none group z-10";
+            this.div.innerHTML = `
+              <div class="relative flex items-center justify-center">
+                <span class="absolute h-8 w-8 rounded-full animate-ping" style="background: var(--primary); opacity: 0.2"></span>
+                <div class="h-4 w-4 rounded-full border-2 border-white drop-shadow-md" style="background: var(--primary)"></div>
+              </div>
+              <div class="absolute left-1/2 -translate-x-1/2 -top-8 px-2.5 py-1 rounded-md glass-strong text-[10px] font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                You are here
+              </div>
+            `;
+            const panes = this.getPanes();
+            panes.overlayMouseTarget.appendChild(this.div);
+          }
+
+          draw() {
+            if (!this.div) return;
+            const overlayProjection = this.getProjection();
+            if (!overlayProjection) return;
+            const pos = overlayProjection.fromLatLngToDivPixel(this.position);
+            if (pos) {
+              this.div.style.left = pos.x + 'px';
+              this.div.style.top = pos.y + 'px';
+            }
+          }
+
+          onRemove() {
+            if (this.div && this.div.parentNode) {
+              this.div.parentNode.removeChild(this.div);
+              this.div = null;
+            }
+          }
+        }
+
+        userOverlayRef.current = new CustomMarkerOverlay(
+          new (window as any).google.maps.LatLng(detectedCoordinates.lat, detectedCoordinates.lng)
+        );
+        userOverlayRef.current.setMap(mapInstanceRef.current);
+      } else {
+        userOverlayRef.current.position = new (window as any).google.maps.LatLng(detectedCoordinates.lat, detectedCoordinates.lng);
+        userOverlayRef.current.draw();
+      }
+    } else if (userOverlayRef.current) {
+      userOverlayRef.current.setMap(null);
+      userOverlayRef.current = null;
+    }
+
+    return () => {
+      if (userOverlayRef.current) {
+        userOverlayRef.current.setMap(null);
+        userOverlayRef.current = null;
+      }
+    };
+  }, [selectedId, detectedCoordinates, mapReady]);
 
   useEffect(() => {
     if (mapInstanceRef.current && selectedId && mapReady) {
@@ -262,27 +335,7 @@ export function MapCanvas({ layer, selectedId, onLocationClick, localitiesOverri
         );
       })}
 
-      {/* Dynamic Mode: You Are Here Marker */}
-      {selectedId === "dynamic" && detectedCoordinates && (
-        <div 
-          className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none group z-10"
-          style={{ 
-            left: "50%", 
-            top: "50%" // Centered because map pans to it
-          }}
-        >
-          <div className="relative flex items-center justify-center">
-            <span
-              className="absolute h-8 w-8 rounded-full animate-ping"
-              style={{ background: "var(--primary)", opacity: 0.2 }}
-            />
-            <div className="h-4 w-4 rounded-full border-2 border-white drop-shadow-md" style={{ background: "var(--primary)" }} />
-          </div>
-          <div className="absolute left-1/2 -translate-x-1/2 -top-8 px-2.5 py-1 rounded-md glass-strong text-[10px] font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-            You are here
-          </div>
-        </div>
-      )}
+      {/* Dynamic Mode: You Are Here Marker is now rendered via OverlayView inside useEffect */}
 
       {/* Map controls */}
       <div className="absolute right-4 bottom-6 flex flex-col gap-2">
