@@ -107,6 +107,10 @@ export function MapCanvas({ layer, selectedId, onLocationClick, localitiesOverri
           { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#101c1a' }] },
         ]
       });
+
+      (window as any).google.maps.event.addListenerOnce(mapInstanceRef.current, 'tilesloaded', () => {
+        console.log('[Map] Map ready');
+      });
     };
 
     if ((window as any).google?.maps) {
@@ -133,8 +137,11 @@ export function MapCanvas({ layer, selectedId, onLocationClick, localitiesOverri
   useEffect(() => {
     if (mapInstanceRef.current && selectedId) {
       if (selectedId === "dynamic" && detectedCoordinates) {
-        console.log(`[MapCanvas] Recentering map to dynamic coordinates`, detectedCoordinates);
+        console.log(`[Map] Dynamic coordinates received:`, detectedCoordinates);
+        console.log(`[Map] Panning to detected location`);
         mapInstanceRef.current.panTo(detectedCoordinates);
+        console.log(`[Map] Applying locality zoom`);
+        mapInstanceRef.current.setZoom(15);
       } else {
         const locList = localitiesOverride || localities;
         const targetLoc = locList.find((l: any) => l.id === selectedId);
@@ -306,7 +313,7 @@ export function MapCanvas({ layer, selectedId, onLocationClick, localitiesOverri
             if (mapInstanceRef.current) {
               if (selectedId === "dynamic" && detectedCoordinates) {
                 mapInstanceRef.current.setCenter(detectedCoordinates);
-                mapInstanceRef.current.setZoom(13.5);
+                mapInstanceRef.current.setZoom(15);
               } else {
                 const locList = localitiesOverride || localities;
                 const targetLoc = locList.find((l: any) => l.id === selectedId);

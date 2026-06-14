@@ -23,13 +23,15 @@ export function useDashboardIntelligence() {
 
       if (!selectedLocalityId && mapped.length > 0) {
         if (navigator.geolocation) {
-          console.log("[Geolocation] Attempting to get coordinates...");
+          console.log("[Dynamic Climate] Coordinates detected");
           navigator.geolocation.getCurrentPosition(
-            (position) => {
+            async (position) => {
               const { latitude, longitude } = position.coords;
               console.log("[Geolocation] Detected coordinates:", latitude, longitude);
               setDetectedCoordinates({ lat: latitude, lng: longitude });
               setSelectedLocalityId("dynamic");
+              
+              // 1. Immediately hydrate with a loading state, we will reverse geocode in fetchScore
               setLoadingInitial(false);
             },
             (error) => {
@@ -58,19 +60,50 @@ export function useDashboardIntelligence() {
       setIsHydratingScore(true);
       try {
         if (selectedLocalityId === "dynamic" && detectedCoordinates) {
-          console.log("[Climate Data] Fetching dynamic score for", detectedCoordinates);
+          // Frontend Reverse Geocoding for Immediate Hydration
+          let cityName = "Your Location";
+          try {
+            const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+            if (apiKey) {
+              const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${detectedCoordinates.lat},${detectedCoordinates.lng}&key=${apiKey}`);
+              const data = await response.json();
+              if (data.results && data.results[0]) {
+                const getComponent = (type: string) => 
+                  data.results[0].address_components.find((c: any) => c.types.includes(type))?.long_name;
+                cityName = getComponent("locality") || getComponent("administrative_area_level_2") || "Your Location";
+              }
+            }
+          } catch (e) {
+            console.warn("Frontend reverse geocoding failed, using generic name.");
+          }
+
+          // Immediately hydrate with city name and placeholders
+          console.log("[Dynamic Climate] Hydrating activeLocalityData");
+          setActiveLocalityData(adaptClimateScoreToLocality({
+            id: "dynamic",
+            slug: "dynamic",
+            name: cityName,
+            city: cityName,
+            latitude: detectedCoordinates.lat,
+            longitude: detectedCoordinates.lng
+          }, {}));
+
+          console.log("[Dynamic Climate] Fetching climate profile");
           const scoreRes = await climateClient.getDynamicScore(detectedCoordinates.lat, detectedCoordinates.lng);
+          console.log("[Dynamic Climate] Climate payload received");
+          
           const dynamicLocality = {
             id: scoreRes.data.id,
             slug: scoreRes.data.slug,
-            name: scoreRes.data.name,
-            city: scoreRes.data.city,
+            name: scoreRes.data.name || cityName,
+            city: scoreRes.data.city || cityName,
             state: scoreRes.data.state,
             country: scoreRes.data.country,
             latitude: scoreRes.data.latitude,
             longitude: scoreRes.data.longitude
           };
           const frontendObj = adaptClimateScoreToLocality(dynamicLocality, scoreRes.data);
+          // Progressively enrich
           setActiveLocalityData(frontendObj);
         } else {
           const locRaw = localitiesRaw.find(l => l.slug === selectedLocalityId);
@@ -82,7 +115,8 @@ export function useDashboardIntelligence() {
           setLocalitiesWithPins(prev => prev.map(p => p.id === frontendObj.id ? frontendObj : p));
         }
       } catch (err) {
-        console.error("[Climate Data] Failed to fetch score", err);
+        console.error("[Dynamic Climate] Hydration failed", err);
+        // Do not revert to null. The initial hydration keeps the panel location-aware.
       } finally {
         setIsHydratingScore(false);
       }

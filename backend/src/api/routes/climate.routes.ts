@@ -63,6 +63,12 @@ export async function registerClimateRoutes(app: FastifyInstance): Promise<void>
   app.get("/coordinates", async (request) => {
     const query = coordinateQuerySchema.parse(request.query);
     
+    console.log("[Dynamic Climate] Verifying Cloud Run environment variables for OpenWeather, Planet/Sentinel, and Google Maps");
+    const envVars = ["googleMapsApiKey", "openWeatherApiKey", "planetApiKey", "sentinelHubClientId", "sentinelHubClientSecret"];
+    envVars.forEach(v => {
+      if (!(env as any)[v]) console.warn(`[Dynamic Climate] Missing environment variable: ${v}`);
+    });
+
     // 1. Reverse geocode
     const mapsClient = new GoogleMapsClient();
     const locationMeta = await mapsClient.reverseGeocode(query.lat, query.lng);
@@ -78,6 +84,8 @@ export async function registerClimateRoutes(app: FastifyInstance): Promise<void>
       state = getComponent("administrative_area_level_1") || state;
       country = getComponent("country") || country;
     }
+    
+    console.log(`[Dynamic Climate] Reverse geocoded city: ${city}`);
 
     // 2. Fetch live data
     const openWeather = new OpenWeatherClient();
