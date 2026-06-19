@@ -6,6 +6,7 @@ import { ClimateScoreService } from "../../modules/climate/climate-score.service
 import { ForecastsRepository } from "../../modules/forecasts/forecasts.repo.js";
 import { ForecastsService } from "../../modules/forecasts/forecasts.service.js";
 import { getSupabaseAdminClient } from "../../providers/supabase/supabase-admin.client.js";
+import { env } from "../../config/env.js";
 
 const querySchema = z.object({
   localityId: z.string(),

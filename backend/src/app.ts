@@ -94,18 +94,34 @@ export async function buildApp(): Promise<FastifyInstance> {
     return { status: "ok", timestamp: new Date().toISOString() };
   });
 
-  await app.register(registerAuthRoutes, { prefix: `${apiBasePath}/auth` });
-  await app.register(registerUserRoutes, { prefix: `${apiBasePath}/users` });
-  await app.register(registerLocalityRoutes, { prefix: `${apiBasePath}/localities` });
-  await app.register(registerClimateRoutes, { prefix: `${apiBasePath}/climate` });
-  await app.register(registerForecastRoutes, { prefix: `${apiBasePath}/forecasts` });
-  await app.register(registerLayerRoutes, { prefix: `${apiBasePath}/layers` });
-  await app.register(registerRitRoutes, { prefix: `${apiBasePath}/rit` });
-  await app.register(registerMissionRoutes, { prefix: `${apiBasePath}/missions` });
-  await app.register(registerVerificationRoutes, { prefix: `${apiBasePath}/verification` });
-  await app.register(registerRecommendationRoutes, { prefix: `${apiBasePath}/recommendations` });
-  await app.register(registerCommunityRoutes, { prefix: `${apiBasePath}/community` });
-  await app.register(registerAdminRoutes, { prefix: `${apiBasePath}/admin` });
+  const registerWithLog = async (name: string, plugin: any, prefix: string) => {
+    console.log(`[BOOT] Registering ${name}...`);
+    try {
+      await app.register(plugin, { prefix });
+      console.log(`[BOOT] ${name} registered successfully`);
+    } catch (error: any) {
+      console.error(`[BOOT] Failed to register ${name}:`, error);
+      throw new Error(`Critical boot failure: ${name} failed to register. ${error.message}`);
+    }
+  };
+
+  await registerWithLog("auth routes", registerAuthRoutes, `${apiBasePath}/auth`);
+  await registerWithLog("user routes", registerUserRoutes, `${apiBasePath}/users`);
+  await registerWithLog("locality routes", registerLocalityRoutes, `${apiBasePath}/localities`);
+  await registerWithLog("climate routes", registerClimateRoutes, `${apiBasePath}/climate`);
+  await registerWithLog("forecast routes", registerForecastRoutes, `${apiBasePath}/forecasts`);
+  await registerWithLog("layer routes", registerLayerRoutes, `${apiBasePath}/layers`);
+  await registerWithLog("rit routes", registerRitRoutes, `${apiBasePath}/rit`);
+  await registerWithLog("mission routes", registerMissionRoutes, `${apiBasePath}/missions`);
+  await registerWithLog("verification routes", registerVerificationRoutes, `${apiBasePath}/verification`);
+  await registerWithLog("recommendation routes", registerRecommendationRoutes, `${apiBasePath}/recommendations`);
+  await registerWithLog("community routes", registerCommunityRoutes, `${apiBasePath}/community`);
+  await registerWithLog("admin routes", registerAdminRoutes, `${apiBasePath}/admin`);
+
+  app.ready(() => {
+    console.log("[BOOT] Fastify routes tree:");
+    console.log(app.printRoutes());
+  });
 
   return app;
 }
