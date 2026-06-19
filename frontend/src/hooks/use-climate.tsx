@@ -94,6 +94,7 @@ export function useDashboardIntelligence() {
           console.log("[Climate Debug] requesting dynamic score");
           const scoreRes = await climateClient.getDynamicScore(detectedCoordinates.lat, detectedCoordinates.lng);
           console.log("[Climate Debug] payload received");
+          console.log('FULL CLIMATE PAYLOAD:', scoreRes);
           
           const dynamicLocality = {
             id: scoreRes.data.id,
@@ -129,7 +130,7 @@ export function useDashboardIntelligence() {
     fetchScore();
     const interval = setInterval(fetchScore, 5 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [selectedLocalityId, detectedCoordinates?.lat, detectedCoordinates?.lng, localitiesRaw.length]);
+  }, [selectedLocalityId, detectedCoordinates?.lat, detectedCoordinates?.lng]);
 
   return { 
     localitiesRaw,
