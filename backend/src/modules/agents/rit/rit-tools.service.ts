@@ -56,9 +56,9 @@ export class RitToolsService {
         label: "Dynamic",
         trend: "stable",
         metrics: {
-          temperatureC: weatherData?.temp ?? null,
-          aqi: aqiData?.aqi ?? null,
-          ndvi: ndviData?.ndvi ?? null,
+          temperatureC: weatherData?.tempC ?? null,
+          aqi: aqiData?.aqiValue ?? null,
+          ndvi: ndviData?.value ?? null,
           rainfallMm: null,
           rainfallAnomalyPct: null
         },

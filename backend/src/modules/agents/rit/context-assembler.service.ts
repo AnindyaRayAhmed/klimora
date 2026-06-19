@@ -92,7 +92,7 @@ export class ContextAssemblerService {
         break;
 
       case RitIntent.VERIFICATION_HELP:
-        packet.verificationResult = await this.ritTools.getLatestVerificationResult(userId);
+        packet.verificationResult = await this.ritTools.getLatestVerificationResult(query.userId);
         break;
 
       case RitIntent.COMMUNITY_IMPACT:
