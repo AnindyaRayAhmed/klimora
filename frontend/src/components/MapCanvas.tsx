@@ -76,7 +76,6 @@ export function MapCanvas({ layer, selectedId, onLocationClick, localitiesOverri
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const userOverlayRef = useRef<any>(null);
-  const heatmapRef = useRef<any>(null);
   const { detectedCoordinates } = useAppStore();
   const [mapReady, setMapReady] = useState(false);
 
@@ -122,7 +121,7 @@ export function MapCanvas({ layer, selectedId, onLocationClick, localitiesOverri
     } else {
       if (!document.querySelector('script[src*="maps.googleapis.com"]')) {
         const script = document.createElement("script");
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places,visualization`;
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
         script.async = true;
         script.defer = true;
         script.onload = initMap;
@@ -209,74 +208,6 @@ export function MapCanvas({ layer, selectedId, onLocationClick, localitiesOverri
       }
     };
   }, [selectedId, detectedCoordinates, mapReady]);
-
-  // Manage Google Maps visualization heatmap overlay
-  useEffect(() => {
-    if (!mapInstanceRef.current || !mapReady) return;
-
-    const buildHeatmapData = () => {
-      const points: any[] = [];
-      const locList = localitiesOverride || localities;
-      locList.forEach((l: any) => {
-        if (l.coordinates) {
-          let weight = 1;
-          if (layer === "heat") weight = l.temperature?.value || 30;
-          else if (layer === "vegetation") weight = (l.vegetation?.ndvi || 0.5) * 100;
-          else if (layer === "rainfall") weight = l.rainfall?.mm || 50;
-          else if (layer === "aqi") weight = l.airQuality?.aqi || 100;
-          else weight = l.climateScore || 50;
-
-          points.push({
-            location: new (window as any).google.maps.LatLng(l.coordinates.lat, l.coordinates.lng),
-            weight: weight
-          });
-          
-          // Generate secondary satellite points for a wider spread heatmap
-          for (let j = 0; j < 5; j++) {
-            const latOffset = Math.sin(j * 17) * 0.008;
-            const lngOffset = Math.cos(j * 23) * 0.008;
-            points.push({
-              location: new (window as any).google.maps.LatLng(l.coordinates.lat + latOffset, l.coordinates.lng + lngOffset),
-              weight: weight * (0.6 + Math.random() * 0.4)
-            });
-          }
-        }
-      });
-      
-      if (detectedCoordinates) {
-        points.push({
-          location: new (window as any).google.maps.LatLng(detectedCoordinates.lat, detectedCoordinates.lng),
-          weight: 50
-        });
-      }
-      return points;
-    };
-
-    if ((window as any).google?.maps?.visualization?.HeatmapLayer) {
-      if (!heatmapRef.current) {
-        heatmapRef.current = new (window as any).google.maps.visualization.HeatmapLayer({
-          data: buildHeatmapData(),
-          map: mapInstanceRef.current,
-          radius: 50,
-          opacity: 0.6
-        });
-      } else {
-        heatmapRef.current.setData(buildHeatmapData());
-      }
-    } else {
-      console.warn("Google Maps Visualization library not loaded.");
-    }
-  }, [layer, localitiesOverride, detectedCoordinates, mapReady]);
-
-  // Clean up heatmap layer on unmount
-  useEffect(() => {
-    return () => {
-      if (heatmapRef.current) {
-        heatmapRef.current.setMap(null);
-        heatmapRef.current = null;
-      }
-    };
-  }, []);
 
   useEffect(() => {
     if (mapInstanceRef.current && selectedId && mapReady) {
