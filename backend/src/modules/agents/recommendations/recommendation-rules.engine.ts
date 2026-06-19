@@ -6,11 +6,11 @@ export class RecommendationRulesEngine {
     const candidates: RecommendationCandidate[] = [];
 
     // Extract factors
-    const temp = climateContext.factors['temperature_c']?.value || 30;
-    const aqi = climateContext.factors['aqi']?.value || 50;
-    const ndvi = climateContext.factors['ndvi']?.value || 0.5;
-    const rainfall = climateContext.factors['rainfall_mm']?.value || 50;
-    const rainfallBaseline = climateContext.factors['rainfall_mm']?.baseline || 50;
+    const temp = climateContext.factors['temperature_c']?.value ?? 30;
+    const aqi = climateContext.factors['aqi']?.value ?? 50;
+    const ndvi = climateContext.factors['ndvi']?.value ?? 0.5;
+    const rainfall = climateContext.factors['rainfall_mm']?.value ?? 50;
+    const rainfallBaseline = climateContext.factors['rainfall_mm']?.baseline ?? 50;
 
     const conditions = {
       highHeat: temp > 35,

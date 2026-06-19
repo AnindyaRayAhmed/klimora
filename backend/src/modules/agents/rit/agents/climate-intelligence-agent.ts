@@ -9,7 +9,7 @@ export class ClimateIntelligenceAgent {
     
     let ndviVal = metrics.ndvi;
     let ndviSource = "Stored";
-    if (context.freshNdvi?.value) {
+    if (context.freshNdvi && context.freshNdvi.value !== undefined && context.freshNdvi.value !== null) {
        ndviVal = context.freshNdvi.value;
        ndviSource = context.freshNdvi.source;
     }

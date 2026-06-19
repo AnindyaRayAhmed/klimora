@@ -22,12 +22,12 @@ export class RecommendationAgentService {
       overallScore: climateScore.score,
       trend: climateScore.trend,
       factors: {
-        temperature_c: { value: climateScore.metrics.temperatureC || 30, penalty: 0 },
-        aqi: { value: climateScore.metrics.aqi || 50, penalty: 0 },
-        ndvi: { value: climateScore.metrics.ndvi || 0.5, penalty: 0 },
+        temperature_c: { value: climateScore.metrics.temperatureC, penalty: 0 },
+        aqi: { value: climateScore.metrics.aqi, penalty: 0 },
+        ndvi: { value: climateScore.metrics.ndvi, penalty: 0 },
         rainfall_mm: { 
-          value: climateScore.metrics.rainfallMm || 50, 
-          baseline: climateScore.metrics.rainfallBaselineMm || 50,
+          value: climateScore.metrics.rainfallMm, 
+          baseline: climateScore.metrics.rainfallBaselineMm,
           penalty: 0 
         }
       }

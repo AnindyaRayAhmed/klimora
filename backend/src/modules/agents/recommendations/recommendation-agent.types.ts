@@ -21,5 +21,5 @@ export interface RecommendationCandidate {
 export interface ClimateContext {
   overallScore: number;
   trend: string;
-  factors: Record<string, { value: number, baseline?: number, penalty: number }>;
+  factors: Record<string, { value: number | null, baseline?: number | null, penalty: number }>;
 }

@@ -3,23 +3,23 @@ import type { ClimateSnapshot } from "./climate.types.js";
 export interface RawProviderData {
   localityId: string;
   weather: {
-    tempC?: number;
-    heatIndexC?: number;
+    tempC?: number | null;
+    heatIndexC?: number | null;
   } | null;
   aqi: {
-    aqiValue?: number;
+    aqiValue?: number | null;
   } | null;
   ndvi: {
-    value?: number;
-    source?: string;
-    observedAt?: string;
+    value?: number | null;
+    source?: string | null;
+    observedAt?: string | null;
   } | null;
   rainfall: {
-    mm?: number;
-    baselineMm?: number;
+    mm?: number | null;
+    baselineMm?: number | null;
     baselineSource?: string | null;
     baselineConfidence?: string | null;
-    anomalyPct?: number;
+    anomalyPct?: number | null;
   } | null;
   observedAt?: string;
 }

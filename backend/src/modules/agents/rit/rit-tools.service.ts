@@ -130,7 +130,7 @@ export class RitToolsService {
       const ndvi = await this.planet.getNdviForLocation(lat, lon);
       return ndvi;
     } catch (e) {
-      return { value: 0, source: "stored_fallback" };
+      return { value: null, source: "stored_fallback", observedAt: new Date().toISOString() };
     }
   }
 

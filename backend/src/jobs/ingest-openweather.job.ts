@@ -80,15 +80,15 @@ export async function runIngestOpenweatherJob() {
       }
 
       let anomalyPct = 0;
-      if (baselineMm > 0) {
+      if (baselineMm !== null && baselineMm > 0) {
         anomalyPct = ((rainMm - baselineMm) / baselineMm) * 100;
       }
 
       const rainfall = {
         mm: rainMm,
         baselineMm,
-        baselineSource,
-        baselineConfidence,
+        baselineSource: baselineSource || null,
+        baselineConfidence: baselineConfidence || null,
         anomalyPct
       };
       
