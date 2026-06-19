@@ -6,6 +6,9 @@ import { RecommendationAgentService } from "../recommendations/recommendation-ag
 import { OpenWeatherClient } from "../../../providers/openweather/openweather.client.js";
 import { PlanetClient } from "../../../providers/planet/planet.client.js";
 import { RitBehaviorProfile } from "./rit.types.js";
+import { ClimateSignalsService } from "../../climate/climate-signals.service.js";
+import { ClimateScoreEngine } from "../../climate/climate-score.engine.js";
+import { getActiveScoreVersion } from "../../climate/score-versioning.js";
 
 /**
  * Rit internal tools abstraction layer.
@@ -51,18 +54,42 @@ export class RitToolsService {
         this.planet.getNdviForLocation(lat, lon).catch(() => null),
       ]);
 
+      const signalsService = new ClimateSignalsService();
+      const snapshot = signalsService.normalizeProviderData({
+        localityId: "dynamic",
+        weather: weatherData,
+        aqi: aqiData,
+        ndvi: ndviData,
+        rainfall: null, 
+      });
+
+      const version = getActiveScoreVersion();
+      const engine = new ClimateScoreEngine(version);
+      
+      const confidences = {
+        heat: snapshot.temperatureC !== null ? 1.0 : 0.0,
+        aqi: snapshot.aqi !== null ? 1.0 : 0.0,
+        vegetation: snapshot.ndvi !== null ? 1.0 : 0.0,
+        rainfall: snapshot.rainfallAnomalyPct !== null ? 1.0 : 0.0,
+        historical_trend: 0.0,
+      };
+
+      const result = engine.compute(snapshot, { current90DayAvg: null, prev90DayAvg: null }, confidences);
+
       return {
-        score: 50, // default placeholder, the intent is just context
-        label: "Dynamic",
-        trend: "stable",
+        score: result.score,
+        label: result.label,
+        trend: result.trend,
+        confidence: result.confidence,
         metrics: {
-          temperatureC: weatherData?.tempC ?? null,
-          aqi: aqiData?.aqiValue ?? null,
-          ndvi: ndviData?.value ?? null,
-          rainfallMm: null,
-          rainfallAnomalyPct: null
+          temperatureC: snapshot.temperatureC,
+          heatIndexC: snapshot.heatIndexC,
+          aqi: snapshot.aqi,
+          ndvi: snapshot.ndvi,
+          rainfallMm: snapshot.rainfallMm,
+          rainfallAnomalyPct: snapshot.rainfallAnomalyPct
         },
-        breakdown: []
+        breakdown: result.breakdown
       };
     } catch (e) {
       console.warn("Dynamic climate score assembly failed in RitTools");

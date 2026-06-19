@@ -79,8 +79,8 @@ export class PlanetClient {
     const token = await this.getAccessToken();
 
     if (!token) {
-      console.warn("No valid Planet API key or Sentinel Hub OAuth credentials found. Returning default NDVI.");
-      return { value: 0.65, source: "mock", observedAt: new Date().toISOString() };
+      console.warn("No valid Planet API key or Sentinel Hub OAuth credentials found. Returning null NDVI.");
+      return { value: null, source: "sentinel_hub_auth_failed", observedAt: new Date().toISOString() };
     }
 
     // Construct a small bounding box around the coordinates (approx. 100m x 100m)
@@ -144,8 +144,8 @@ function evaluatePixel(samples) {
       });
 
       if (!response.ok) {
-        console.warn(`Sentinel Hub Statistical API returned status ${response.status}. Falling back to default.`);
-        return { value: 0.65, source: "sentinel_hub_fallback", observedAt: new Date().toISOString() };
+        console.warn(`Sentinel Hub Statistical API returned status ${response.status}. Returning null NDVI.`);
+        return { value: null, source: "sentinel_hub_api_error", observedAt: new Date().toISOString() };
       }
 
       const data = (await response.json()) as { data?: any[] };
@@ -159,11 +159,11 @@ function evaluatePixel(samples) {
         };
       }
 
-      console.warn("Sentinel Hub response missing NDVI mean metric. Falling back to default.");
-      return { value: 0.65, source: "sentinel_hub_fallback", observedAt: new Date().toISOString() };
+      console.warn("Sentinel Hub response missing NDVI mean metric. Returning null NDVI.");
+      return { value: null, source: "sentinel_hub_missing_data", observedAt: new Date().toISOString() };
     } catch (error) {
       console.error("Sentinel Hub Statistical API error:", error);
-      return { value: 0.65, source: "sentinel_hub_error_fallback", observedAt: new Date().toISOString() };
+      return { value: null, source: "sentinel_hub_error", observedAt: new Date().toISOString() };
     }
   }
 

@@ -51,13 +51,13 @@ export function adaptClimateScoreToLocality(localityRaw: any, scoreRaw: any): Lo
       aqi: scoreRaw.metrics?.aqi !== undefined && scoreRaw.metrics?.aqi !== null 
         ? scoreRaw.metrics.aqi 
         : base.airQuality.aqi,
-      label: scoreRaw.breakdown?.find((b:any) => b.label === 'AQI')?.reason || base.airQuality.label
+      label: scoreRaw.breakdown?.find((b:any) => b.label === 'Air Quality')?.reason || base.airQuality.label
     },
     vegetation: {
       ndvi: scoreRaw.metrics?.ndvi !== undefined && scoreRaw.metrics?.ndvi !== null 
         ? scoreRaw.metrics.ndvi 
         : base.vegetation.ndvi,
-      label: scoreRaw.breakdown?.find((b:any) => b.label === 'Vegetation')?.reason || base.vegetation.label
+      label: scoreRaw.breakdown?.find((b:any) => b.label === 'Vegetation Health')?.reason || base.vegetation.label
     },
     rainfall: {
       mm: scoreRaw.metrics?.rainfallMm !== undefined && scoreRaw.metrics?.rainfallMm !== null 
@@ -66,7 +66,7 @@ export function adaptClimateScoreToLocality(localityRaw: any, scoreRaw: any): Lo
       delta: scoreRaw.metrics?.rainfallAnomalyPct !== undefined && scoreRaw.metrics?.rainfallAnomalyPct !== null 
         ? scoreRaw.metrics.rainfallAnomalyPct 
         : base.rainfall.delta,
-      label: scoreRaw.breakdown?.find((b:any) => b.label === 'Rainfall')?.reason || base.rainfall.label
+      label: scoreRaw.breakdown?.find((b:any) => b.label === 'Rainfall Anomaly')?.reason || base.rainfall.label
     },
     heatRisk: {
       value: scoreRaw.metrics?.heatIndexC !== undefined && scoreRaw.metrics?.heatIndexC !== null 

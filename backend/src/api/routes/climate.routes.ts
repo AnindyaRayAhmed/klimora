@@ -81,8 +81,8 @@ export async function registerClimateRoutes(app: FastifyInstance): Promise<void>
     
     if (locationMeta && locationMeta.address_components) {
       const getComponent = (type: string) => 
-        locationMeta.address_components.find((c: any) => c.types.includes(type))?.long_name;
-      city = getComponent("locality") || getComponent("administrative_area_level_2") || city;
+        locationMeta.address_components.find((c: any) => c.types.some((t: string) => t.includes(type)))?.long_name;
+      city = getComponent("locality") || getComponent("sublocality") || getComponent("administrative_area_level_2") || getComponent("administrative_area_level_1") || getComponent("postal_town") || getComponent("political") || city;
       state = getComponent("administrative_area_level_1") || state;
       country = getComponent("country") || country;
     }

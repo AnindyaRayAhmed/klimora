@@ -40,8 +40,8 @@ export class ContextAssemblerService {
         let city = "Unknown Location";
         if (locationMeta && locationMeta.address_components) {
           const getComponent = (type: string) => 
-            locationMeta.address_components.find((c: any) => c.types.includes(type))?.long_name;
-          city = getComponent("locality") || getComponent("administrative_area_level_2") || city;
+            locationMeta.address_components.find((c: any) => c.types.some((t: string) => t.includes(type)))?.long_name;
+          city = getComponent("locality") || getComponent("sublocality") || getComponent("administrative_area_level_2") || getComponent("administrative_area_level_1") || getComponent("postal_town") || getComponent("political") || city;
         }
         console.log(`[Rit Dynamic] Reverse geocoded city: ${city}`);
         console.log("[Rit Debug] using coordinate-native context");

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { localitiesClient, climateClient } from '../lib/api/domains.client';
 import { adaptClimateScoreToLocality } from '../lib/api/adapters';
 import { useAppStore } from '../store';
@@ -12,6 +12,7 @@ export function useDashboardIntelligence() {
   const [localitiesWithPins, setLocalitiesWithPins] = useState<Locality[]>([]);
   const [loadingInitial, setLoadingInitial] = useState(true);
   const [isHydratingScore, setIsHydratingScore] = useState(false);
+  const fetchingRef = React.useRef(false);
 
   useEffect(() => {
     localitiesClient.list().then(res => {
@@ -57,6 +58,8 @@ export function useDashboardIntelligence() {
     if (!selectedLocalityId) return;
 
     const fetchScore = async () => {
+      if (fetchingRef.current) return;
+      fetchingRef.current = true;
       setIsHydratingScore(true);
       try {
         if (selectedLocalityId === "dynamic" && detectedCoordinates) {
@@ -69,8 +72,8 @@ export function useDashboardIntelligence() {
               const data = await response.json();
               if (data.results && data.results[0]) {
                 const getComponent = (type: string) => 
-                  data.results[0].address_components.find((c: any) => c.types.includes(type))?.long_name;
-                cityName = getComponent("locality") || getComponent("administrative_area_level_2") || "Your Location";
+                  data.results[0].address_components.find((c: any) => c.types.some((t: string) => t.includes(type)))?.long_name;
+                cityName = getComponent("locality") || getComponent("sublocality") || getComponent("administrative_area_level_2") || getComponent("administrative_area_level_1") || getComponent("postal_town") || getComponent("political") || "Your Location";
               }
             }
           } catch (e) {
@@ -119,13 +122,14 @@ export function useDashboardIntelligence() {
         // Do not revert to null. The initial hydration keeps the panel location-aware.
       } finally {
         setIsHydratingScore(false);
+        fetchingRef.current = false;
       }
     };
 
     fetchScore();
     const interval = setInterval(fetchScore, 5 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [selectedLocalityId, detectedCoordinates, localitiesRaw]);
+  }, [selectedLocalityId, detectedCoordinates?.lat, detectedCoordinates?.lng, localitiesRaw.length]);
 
   return { 
     localitiesRaw,

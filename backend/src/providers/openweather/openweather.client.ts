@@ -62,6 +62,7 @@ export class OpenWeatherClient {
     interface AirQualityResponse {
       list?: Array<{
         main: { aqi: number };
+        components: { pm2_5: number; pm10: number; no2: number; [key: string]: number };
       }>;
     }
     const data = await this.fetchOpenWeather<AirQualityResponse>("/air_pollution", { lat: lat.toString(), lon: lon.toString() });
@@ -70,10 +71,26 @@ export class OpenWeatherClient {
     const firstItem = data.list[0];
     if (!firstItem) return null;
     
-    // Map OpenWeather AQI (1-5) to roughly US EPA standard for the formula (0-500)
-    const rawAqi = firstItem.main.aqi;
-    const aqiMap: Record<number, number> = { 1: 25, 2: 75, 3: 125, 4: 175, 5: 250 };
-    return { aqiValue: aqiMap[rawAqi] || 50 };
+    const pm25 = firstItem.components?.pm2_5;
+    let finalAqi = 50;
+
+    if (pm25 !== undefined) {
+      if (pm25 <= 12.0) finalAqi = Math.round((50 / 12.0) * pm25);
+      else if (pm25 <= 35.4) finalAqi = Math.round(((100 - 51) / (35.4 - 12.1)) * (pm25 - 12.1) + 51);
+      else if (pm25 <= 55.4) finalAqi = Math.round(((150 - 101) / (55.4 - 35.5)) * (pm25 - 35.5) + 101);
+      else if (pm25 <= 150.4) finalAqi = Math.round(((200 - 151) / (150.4 - 55.5)) * (pm25 - 55.5) + 151);
+      else if (pm25 <= 250.4) finalAqi = Math.round(((300 - 201) / (250.4 - 150.5)) * (pm25 - 150.5) + 201);
+      else if (pm25 <= 350.4) finalAqi = Math.round(((400 - 301) / (350.4 - 250.5)) * (pm25 - 250.5) + 301);
+      else if (pm25 <= 500.4) finalAqi = Math.round(((500 - 401) / (500.4 - 350.5)) * (pm25 - 350.5) + 401);
+      else finalAqi = 500;
+    } else {
+      const rawAqi = firstItem.main.aqi;
+      const aqiMap: Record<number, number> = { 1: 25, 2: 75, 3: 125, 4: 175, 5: 250 };
+      finalAqi = aqiMap[rawAqi] || 50;
+    }
+
+    console.log(`[OpenWeather] Raw AQI: ${firstItem.main.aqi}, PM2.5: ${pm25}, Final Normalized AQI: ${finalAqi}`);
+    return { aqiValue: finalAqi };
   }
 
   async getHistoricalRainfallBaseline(lat: number, lon: number): Promise<number | null> {
