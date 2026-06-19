@@ -144,6 +144,17 @@ function evaluatePixel(samples) {
       });
 
       if (!response.ok) {
+        let errorData: any = "";
+        try {
+          errorData = await response.text();
+          try {
+            errorData = JSON.parse(errorData);
+          } catch {}
+        } catch (e: any) {
+          errorData = e?.message || e;
+        }
+        console.error("Sentinel Hub Statistical API request failed. Payload:", JSON.stringify(requestBody, null, 2));
+        console.error("Sentinel Hub Statistical API error response:", errorData);
         console.warn(`Sentinel Hub Statistical API returned status ${response.status}. Returning null NDVI.`);
         return { value: null, source: "sentinel_hub_api_error", observedAt: new Date().toISOString() };
       }
@@ -161,8 +172,9 @@ function evaluatePixel(samples) {
 
       console.warn("Sentinel Hub response missing NDVI mean metric. Returning null NDVI.");
       return { value: null, source: "sentinel_hub_missing_data", observedAt: new Date().toISOString() };
-    } catch (error) {
-      console.error("Sentinel Hub Statistical API error:", error);
+    } catch (error: any) {
+      console.error("Sentinel Hub Statistical API request failed in catch. Payload:", JSON.stringify(requestBody, null, 2));
+      console.error("Sentinel Hub Statistical API error:", error?.message || error);
       return { value: null, source: "sentinel_hub_error", observedAt: new Date().toISOString() };
     }
   }
