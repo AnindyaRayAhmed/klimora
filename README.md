@@ -1117,16 +1117,27 @@ You need to enable these APIs for Klimora to function. For each one:
 | **Geocoding API** | Converts text addresses to GPS coordinates and vice versa |
 | **Geolocation API** | Allows detecting the user's current location |
 
-#### 4.3 Generate Google Maps API Key
+#### 4.3 Generate Google Maps API Keys
 
-1. Go to **APIs & Services → Credentials**
-2. Click **"Create Credentials"** → **"API Key"**
-3. Your key will be created. Click **"Edit API Key"** (the pencil icon)
-4. Under **Application restrictions**:
-   - For development: select **"None"**
-   - For production: select **"HTTP referrers (web sites)"** and add your domain (e.g. `https://klimora.app/*`)
-5. Under **API restrictions**: Restrict to the four APIs you enabled above
-6. Click **"Save"**
+To maximize security and prevent unauthorized usage, Klimora utilizes a dual-key Google Maps configuration. Follow the steps below to generate both required keys:
+
+##### 4.3.1 Frontend API Key (Browser-Restricted)
+1. Go to **APIs & Services → Credentials**.
+2. Click **"Create Credentials"** → **"API Key"**.
+3. Edit the newly created key and configure it as follows:
+   * **Purpose**: Used by the React client on Vercel to load the visual Map Canvas and Places Search.
+   * **Application restrictions**: Select **"HTTP referrers (web sites)"** and restrict it to production domains (e.g., `https://klimora.app/*`) and local dev (`http://localhost/*`).
+   * **API restrictions**: Restrict access to **"Maps JavaScript API"** and **"Places API"**.
+4. Click **"Save"**.
+
+##### 4.3.2 Backend API Key (Server-Native)
+1. Go to **APIs & Services → Credentials**.
+2. Click **"Create Credentials"** → **"API Key"**.
+3. Edit the newly created key and configure it as follows:
+   * **Purpose**: Securely injected via Google Cloud Secret Manager (`GOOGLE_MAPS_API_KEY`) for the Cloud Run server to perform reverse geocoding lookups.
+   * **Application restrictions**: Select **"None"**. (Must remain unrestricted by referer because servers do not send browser headers).
+   * **API restrictions**: Restrict access strictly to the **"Geocoding API"** and **"Geolocation API"**.
+4. Click **"Save"**.
 
 > **Why API restrictions matter**: Without restrictions, anyone who finds your key can use it and rack up charges on your Google Cloud billing account. HTTP referrer restrictions ensure the key only works when requests come from your website's domain.
 
