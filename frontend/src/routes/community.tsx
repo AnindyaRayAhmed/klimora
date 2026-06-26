@@ -67,8 +67,20 @@ function CommunityPage() {
   const { activeLocalityData } = useDashboardIntelligence();
   const [scope, setScope] = useState<Scope>("ward");
 
+  if (loading || !activeLocalityData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-2">
+          <span className="h-6 w-6 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+          <span className="text-xs text-muted-foreground">Loading community insights...</span>
+        </div>
+      </div>
+    );
+  }
+
   // Locate my ward in the active ranking list
-  const myWard = wardRankings.find((r) => r.id === activeLocalityData.id) || (wardRankings[0] ? wardRankings[0] : { rank: '-', name: activeLocalityData.name, score: activeLocalityData.climateScore, trend: 'flat', movement: 0 });
+  const myWard = wardRankings.find((r) => r.id === activeLocalityData.id) || 
+    (wardRankings[0] ? wardRankings[0] : { rank: '-', name: activeLocalityData.name, score: activeLocalityData.climateScore, trend: 'flat', movement: 0 });
 
   return (
     <div className="min-h-screen px-4 md:px-8 py-6 md:py-10">

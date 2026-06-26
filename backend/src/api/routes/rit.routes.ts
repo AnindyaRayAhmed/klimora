@@ -27,6 +27,13 @@ const chatSchema = z.object({
   lat: z.coerce.number().optional(),
   lng: z.coerce.number().optional(),
   conversationId: z.string().uuid().optional(),
+  climateMetrics: z.object({
+    temperatureC: z.number().nullable().optional(),
+    aqi: z.number().nullable().optional(),
+    ndvi: z.number().nullable().optional(),
+    rainfallMm: z.number().nullable().optional(),
+    score: z.number().nullable().optional(),
+  }).optional(),
 });
 
 export async function registerRitRoutes(app: FastifyInstance): Promise<void> {
@@ -79,14 +86,15 @@ export async function registerRitRoutes(app: FastifyInstance): Promise<void> {
       }
       
       // We pass the finalLocalityId along with the optional lat/lng context 
-      // to the Rit Agent so it can build context from coordinates.
+      // and climate metrics to the Rit Agent.
       return await ritAgent.processQuery({
         userId,
         localityId: finalLocalityId,
         message: body.message,
         conversationId: body.conversationId,
         lat: body.lat,
-        lng: body.lng
+        lng: body.lng,
+        climateMetrics: body.climateMetrics
       });
     });
 

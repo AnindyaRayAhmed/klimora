@@ -19,10 +19,23 @@ export const climateClient = {
 };
 
 export const ritClient = {
-  chat: (message: string, localityId: string, conversationId?: string, lat?: number, lng?: number) => 
+  chat: (
+    message: string, 
+    localityId: string, 
+    conversationId?: string, 
+    lat?: number, 
+    lng?: number,
+    climateMetrics?: {
+      temperatureC?: number | null;
+      aqi?: number | null;
+      ndvi?: number | null;
+      rainfallMm?: number | null;
+      score?: number | null;
+    }
+  ) => 
     apiClient<any>(`/rit/chat`, {
       method: 'POST',
-      body: JSON.stringify({ message, localityId, conversationId, lat, lng })
+      body: JSON.stringify({ message, localityId, conversationId, lat, lng, climateMetrics })
     }),
 
   getInsights: (localityId: string) => 

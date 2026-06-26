@@ -171,7 +171,15 @@ function RitPage() {
   }, [messages, thinking]);
 
   const send = (text: string) => {
-    sendMessage(text);
+    const climateMetrics = activeLocalityData ? {
+      temperatureC: activeLocalityData.temperature?.value ?? null,
+      aqi: activeLocalityData.airQuality?.aqi ?? null,
+      ndvi: activeLocalityData.vegetation?.ndvi ?? null,
+      rainfallMm: activeLocalityData.rainfall?.mm ?? null,
+      score: activeLocalityData.climateScore ?? null,
+    } : undefined;
+
+    sendMessage(text, climateMetrics);
     setInput("");
   };
 

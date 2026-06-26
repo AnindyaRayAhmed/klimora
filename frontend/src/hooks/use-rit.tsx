@@ -53,7 +53,16 @@ export function useRitChat() {
     return () => clearInterval(interval);
   }, [selectedLocalityId]);
 
-  const sendMessage = async (text: string) => {
+  const sendMessage = async (
+    text: string, 
+    climateMetrics?: {
+      temperatureC?: number | null;
+      aqi?: number | null;
+      ndvi?: number | null;
+      rainfallMm?: number | null;
+      score?: number | null;
+    }
+  ) => {
     if (!text.trim() || !selectedLocalityId) return;
 
     const userMsg: ChatMessage = { id: crypto.randomUUID(), role: 'user', content: text, isOptimistic: true };
@@ -64,7 +73,7 @@ export function useRitChat() {
       const lat = selectedLocalityId === "dynamic" ? detectedCoordinates?.lat : undefined;
       const lng = selectedLocalityId === "dynamic" ? detectedCoordinates?.lng : undefined;
 
-      const res = await ritClient.chat(text, selectedLocalityId, ritActiveConversationId || undefined, lat, lng);
+      const res = await ritClient.chat(text, selectedLocalityId, ritActiveConversationId || undefined, lat, lng, climateMetrics);
       
       if (!ritActiveConversationId && res.conversationId) {
         setRitActiveConversationId(res.conversationId);

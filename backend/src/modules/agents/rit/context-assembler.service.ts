@@ -16,6 +16,22 @@ export class ContextAssemblerService {
     packet.recentMemory = await this.memoryService.getMemory(conversationId);
     packet.behaviorProfile = await this.ritTools.inferBehaviorProfile(query.userId);
 
+    if (query.climateMetrics) {
+      packet.climateScore = {
+        score: query.climateMetrics.score ?? null,
+        metrics: {
+          temperatureC: query.climateMetrics.temperatureC ?? null,
+          aqi: query.climateMetrics.aqi ?? null,
+          ndvi: query.climateMetrics.ndvi ?? null,
+          rainfallMm: query.climateMetrics.rainfallMm ?? null,
+        }
+      };
+      packet.freshNdvi = {
+        value: query.climateMetrics.ndvi ?? null,
+        source: "client_injected"
+      };
+    }
+
     let lat = query.lat || 0;
     let lon = query.lng || 0;
 
@@ -57,30 +73,38 @@ export class ContextAssemblerService {
     switch (intent) {
       case RitIntent.CLIMATE_EXPLANATION:
       case RitIntent.ENVIRONMENTAL_QA:
-        if (query.localityId !== "dynamic" && !query.localityId.startsWith("dynamic-")) {
-          packet.climateScore = await this.ritTools.getLatestClimateScore(query.localityId);
-        } else if (lat && lon) {
-          packet.climateScore = await this.ritTools.getDynamicClimateScore(lat, lon, packet.dynamicLocation?.city || "Unknown");
+        if (!packet.climateScore) {
+          if (query.localityId !== "dynamic" && !query.localityId.startsWith("dynamic-")) {
+            packet.climateScore = await this.ritTools.getLatestClimateScore(query.localityId);
+          } else if (lat && lon) {
+            packet.climateScore = await this.ritTools.getDynamicClimateScore(lat, lon, packet.dynamicLocation?.city || "Unknown");
+          }
         }
-        if (lat && lon) {
+        if (!packet.freshNdvi && lat && lon) {
           packet.freshNdvi = await this.ritTools.getFreshNDVI(query.localityId, lat, lon);
         }
         break;
       
       case RitIntent.MISSION_RECOMMENDATION:
-        if (query.localityId !== "dynamic" && !query.localityId.startsWith("dynamic-")) {
-          packet.climateScore = await this.ritTools.getLatestClimateScore(query.localityId);
+        if (!packet.climateScore) {
+          if (query.localityId !== "dynamic" && !query.localityId.startsWith("dynamic-")) {
+            packet.climateScore = await this.ritTools.getLatestClimateScore(query.localityId);
+            packet.recommendations = await this.ritTools.getRecommendations(query.localityId, query.userId);
+          } else if (lat && lon) {
+            packet.climateScore = await this.ritTools.getDynamicClimateScore(lat, lon, packet.dynamicLocation?.city || "Unknown");
+          }
+        } else if (query.localityId !== "dynamic" && !query.localityId.startsWith("dynamic-")) {
           packet.recommendations = await this.ritTools.getRecommendations(query.localityId, query.userId);
-        } else if (lat && lon) {
-          packet.climateScore = await this.ritTools.getDynamicClimateScore(lat, lon, packet.dynamicLocation?.city || "Unknown");
         }
         break;
 
       case RitIntent.FORECAST_DISCUSSION:
-        if (query.localityId !== "dynamic" && !query.localityId.startsWith("dynamic-")) {
-          packet.climateScore = await this.ritTools.getLatestClimateScore(query.localityId);
-        } else if (lat && lon) {
-          packet.climateScore = await this.ritTools.getDynamicClimateScore(lat, lon, packet.dynamicLocation?.city || "Unknown");
+        if (!packet.climateScore) {
+          if (query.localityId !== "dynamic" && !query.localityId.startsWith("dynamic-")) {
+            packet.climateScore = await this.ritTools.getLatestClimateScore(query.localityId);
+          } else if (lat && lon) {
+            packet.climateScore = await this.ritTools.getDynamicClimateScore(lat, lon, packet.dynamicLocation?.city || "Unknown");
+          }
         }
         if (lat && lon) {
           packet.forecasts = await this.ritTools.getLiveForecast(query.localityId, lat, lon);
@@ -100,15 +124,19 @@ export class ContextAssemblerService {
           packet.localityStats = await this.ritTools.getCommunityImpact(query.localityId);
           packet.climateScore = { trendNarrative: await this.ritTools.getClimateTrendNarrative(query.localityId) };
         } else if (lat && lon) {
-          packet.climateScore = await this.ritTools.getDynamicClimateScore(lat, lon, packet.dynamicLocation?.city || "Unknown");
+          if (!packet.climateScore) {
+            packet.climateScore = await this.ritTools.getDynamicClimateScore(lat, lon, packet.dynamicLocation?.city || "Unknown");
+          }
         }
         break;
 
       case RitIntent.MOTIVATION:
-        if (query.localityId !== "dynamic" && !query.localityId.startsWith("dynamic-")) {
-          packet.climateScore = await this.ritTools.getLatestClimateScore(query.localityId);
-        } else if (lat && lon) {
-          packet.climateScore = await this.ritTools.getDynamicClimateScore(lat, lon, packet.dynamicLocation?.city || "Unknown");
+        if (!packet.climateScore) {
+          if (query.localityId !== "dynamic" && !query.localityId.startsWith("dynamic-")) {
+            packet.climateScore = await this.ritTools.getLatestClimateScore(query.localityId);
+          } else if (lat && lon) {
+            packet.climateScore = await this.ritTools.getDynamicClimateScore(lat, lon, packet.dynamicLocation?.city || "Unknown");
+          }
         }
         break;
         

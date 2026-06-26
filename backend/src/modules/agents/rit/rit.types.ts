@@ -17,6 +17,13 @@ export interface RitQuery {
   conversationId?: string;
   lat?: number;
   lng?: number;
+  climateMetrics?: {
+    temperatureC?: number | null;
+    aqi?: number | null;
+    ndvi?: number | null;
+    rainfallMm?: number | null;
+    score?: number | null;
+  };
 }
 
 export enum RitBehaviorProfile {
