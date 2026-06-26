@@ -28,11 +28,14 @@ const chatSchema = z.object({
   lng: z.coerce.number().optional(),
   conversationId: z.string().uuid().optional(),
   climateMetrics: z.object({
+    temperature: z.number().nullable().optional(),
     temperatureC: z.number().nullable().optional(),
     aqi: z.number().nullable().optional(),
     ndvi: z.number().nullable().optional(),
+    rainfall: z.number().nullable().optional(),
     rainfallMm: z.number().nullable().optional(),
     score: z.number().nullable().optional(),
+    climateScore: z.number().nullable().optional(),
   }).optional(),
 });
 

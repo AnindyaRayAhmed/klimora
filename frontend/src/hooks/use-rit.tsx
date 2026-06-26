@@ -56,11 +56,14 @@ export function useRitChat() {
   const sendMessage = async (
     text: string, 
     climateMetrics?: {
+      temperature?: number | null;
       temperatureC?: number | null;
       aqi?: number | null;
       ndvi?: number | null;
+      rainfall?: number | null;
       rainfallMm?: number | null;
       score?: number | null;
+      climateScore?: number | null;
     }
   ) => {
     if (!text.trim() || !selectedLocalityId) return;

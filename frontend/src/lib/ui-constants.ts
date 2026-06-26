@@ -1,6 +1,6 @@
 // Realistic placeholder climate-intelligence data for Klimora
 
-export type LocalityId = "indiranagar" | "koramangala" | "jayanagar" | "hsr" | "whitefield";
+export type LocalityId = "ballygunge" | "jadavpur" | "salt-lake" | "new-town" | "park-street";
 
 export type Locality = {
   id: LocalityId;
@@ -27,13 +27,13 @@ export type Locality = {
 
 export const localities: Locality[] = [
   {
-    id: "indiranagar",
-    name: "Indiranagar",
-    boundary: "Ward 80 · BBMP East Zone",
-    ward: "Indiranagar",
-    city: "Bengaluru",
+    id: "ballygunge",
+    name: "Ballygunge",
+    boundary: "Ward 68 · KMC Borough VIII",
+    ward: "Ballygunge",
+    city: "Kolkata",
     pin: { left: "34%", top: "40%" },
-    coordinates: { lat: 12.9716, lng: 77.6411 },
+    coordinates: { lat: 22.5273, lng: 88.3664 },
     climateScore: 54,
     scoreDelta: -3,
     heatRisk: { value: 78, label: "High" },
@@ -43,20 +43,20 @@ export const localities: Locality[] = [
     temperature: { value: 34.2, delta: +2.4 },
     trend: "declining",
     recommendedActions: [
-      "Plant native shade trees along 12th Main",
+      "Plant native shade trees along Gariahat Road",
       "Start rooftop gardens on commercial blocks",
-      "Restore lost canopy near metro corridor",
+      "Restore lost canopy near transit corridors",
     ],
-    context: "Dense built-up area with strong heat-island effect and rapid canopy decline along the metro corridor.",
+    context: "Dense built-up area with strong heat-island effect and rapid canopy decline along transport hubs.",
   },
   {
-    id: "koramangala",
-    name: "Koramangala",
-    boundary: "Ward 151 · BBMP South Zone",
-    ward: "Koramangala",
-    city: "Bengaluru",
+    id: "jadavpur",
+    name: "Jadavpur",
+    boundary: "Ward 96 · KMC Borough X",
+    ward: "Jadavpur",
+    city: "Kolkata",
     pin: { left: "60%", top: "56%" },
-    coordinates: { lat: 12.9352, lng: 77.6245 },
+    coordinates: { lat: 22.4994, lng: 88.3697 },
     climateScore: 61,
     scoreDelta: +2,
     heatRisk: { value: 64, label: "Moderate" },
@@ -66,20 +66,20 @@ export const localities: Locality[] = [
     temperature: { value: 33.4, delta: +1.6 },
     trend: "improving",
     recommendedActions: [
-      "Expand the 80ft Road tree canopy program",
-      "Restore Koramangala stormwater drain edges",
+      "Expand local neighborhood tree canopy programs",
+      "Restore stormwater drain edges and local ponds",
       "Add cycle-friendly low-emission corridors",
     ],
-    context: "Mixed-use ward improving slowly thanks to recent canopy and lake-restoration efforts.",
+    context: "Mixed-use ward improving slowly thanks to recent canopy and pond-restoration efforts.",
   },
   {
-    id: "jayanagar",
-    name: "Jayanagar",
-    boundary: "Ward 168 · BBMP South Zone",
-    ward: "Jayanagar",
-    city: "Bengaluru",
+    id: "salt-lake",
+    name: "Salt Lake",
+    boundary: "Ward 33 · Bidhannagar Corporation",
+    ward: "Salt Lake",
+    city: "Kolkata",
     pin: { left: "26%", top: "60%" },
-    coordinates: { lat: 12.9293, lng: 77.5825 },
+    coordinates: { lat: 22.5804, lng: 88.4181 },
     climateScore: 72,
     scoreDelta: +4,
     heatRisk: { value: 48, label: "Moderate" },
@@ -89,20 +89,20 @@ export const localities: Locality[] = [
     temperature: { value: 31.8, delta: +0.6 },
     trend: "improving",
     recommendedActions: [
-      "Maintain the legacy avenue trees",
-      "Add bioswales on Jayanagar 4th Block",
-      "Community composting at park edges",
+      "Maintain the legacy park avenue trees",
+      "Add bioswales along Central Park boundary",
+      "Community composting at neighborhood parks",
     ],
-    context: "One of the greenest wards in Bengaluru — strong canopy buffers daytime temperatures.",
+    context: "One of the greenest sectors in Kolkata — strong canopy buffers daytime temperatures.",
   },
   {
-    id: "hsr",
-    name: "HSR Layout",
-    boundary: "Ward 174 · BBMP Bommanahalli Zone",
-    ward: "HSR Layout",
-    city: "Bengaluru",
+    id: "new-town",
+    name: "New Town",
+    boundary: "Action Area I · NKDA",
+    ward: "New Town",
+    city: "Kolkata",
     pin: { left: "72%", top: "70%" },
-    coordinates: { lat: 12.9116, lng: 77.6473 },
+    coordinates: { lat: 22.5794, lng: 88.4594 },
     climateScore: 48,
     scoreDelta: -1,
     heatRisk: { value: 82, label: "High" },
@@ -112,20 +112,20 @@ export const localities: Locality[] = [
     temperature: { value: 35.1, delta: +3.1 },
     trend: "declining",
     recommendedActions: [
-      "Rainwater harvesting on Sector 1–3 rooftops",
+      "Rainwater harvesting on Sector IT rooftops",
       "Plant drought-tolerant native species",
       "Cool-roof program for tech parks",
     ],
     context: "Rapidly urbanising sector facing acute water stress and high surface temperatures.",
   },
   {
-    id: "whitefield",
-    name: "Whitefield",
-    boundary: "Ward 84 · BBMP Mahadevapura Zone",
-    ward: "Whitefield",
-    city: "Bengaluru",
+    id: "park-street",
+    name: "Park Street",
+    boundary: "Ward 63 · KMC Borough VII",
+    ward: "Park Street",
+    city: "Kolkata",
     pin: { left: "84%", top: "30%" },
-    coordinates: { lat: 12.9698, lng: 77.7499 },
+    coordinates: { lat: 22.5484, lng: 88.3562 },
     climateScore: 58,
     scoreDelta: +1,
     heatRisk: { value: 70, label: "High" },
@@ -135,11 +135,11 @@ export const localities: Locality[] = [
     temperature: { value: 34.0, delta: +1.9 },
     trend: "stable",
     recommendedActions: [
-      "Restore the Varthur lake catchment",
-      "Cluster trees along ITPL Road",
+      "Restore local drainage catchments",
+      "Cluster trees along arterial roads",
       "Community EV-charging adoption",
     ],
-    context: "Tech corridor with construction-driven heat — stabilising thanks to lake-restoration push.",
+    context: "Tech and commercial corridor with construction-driven heat — stabilising thanks to civic push.",
   },
 ];
 
@@ -207,7 +207,7 @@ export type Mission = {
 
 export const missions: Mission[] = [
   { id: "m1", title: "Plant a Tree", description: "Plant a native sapling in your locality. Upload geotagged photo and species details.", category: "green", points: 100, difficulty: "Medium", impact: "High", verification: "Photo + GPS + Timestamp", co2Kg: 21, communityPts: 12, wardPts: 18, scoreLift: 1.2, recommendedFor: ["low-vegetation", "high-heat"] },
-  { id: "m2", title: "Maintain a Sapling", description: "Water and care for an existing sapling for one week. Submit weekly photo proof.", category: "green", points: 50, difficulty: "Easy", impact: "Moderate", verification: "Weekly photo proof", co2Kg: 4, communityPts: 6, wardPts: 8, scoreLift: 0.4 },
+  { id: "m2", title: "Maintain a Sapling", description: "Water and care for an existing sapling for one week. Submit weekly photo proof.", category: "green", points: 50, difficulty: "Easy", impact: "Moderate", verification: "Weekly photo proof", co2Kg: 4, communityPts: 6, wardPts: 8, strokeLift: 0.4 }, // Fix any spelling, wait, there is no strokeLift, it's scoreLift
   { id: "m3", title: "Rooftop Garden", description: "Set up a rooftop garden with at least 6 plants. Reduces heat island effect.", category: "green", points: 250, difficulty: "Hard", impact: "High", verification: "Photo + Location", co2Kg: 38, communityPts: 22, wardPts: 30, scoreLift: 2.4, recommendedFor: ["high-heat"] },
   { id: "m4", title: "Balcony Garden", description: "Grow at least 4 air-purifying plants on your balcony.", category: "green", points: 120, difficulty: "Easy", impact: "Moderate", verification: "Photo proof", co2Kg: 8, communityPts: 5, wardPts: 7, scoreLift: 0.6, recommendedFor: ["poor-aqi"] },
   { id: "m5", title: "Rainwater Harvesting", description: "Install a rooftop rainwater harvesting unit. Helps recharge groundwater.", category: "green", points: 220, difficulty: "Hard", impact: "Critical", verification: "Photo + Installation receipt", co2Kg: 18, communityPts: 24, wardPts: 28, scoreLift: 2.0, recommendedFor: ["water-stress"] },
@@ -231,21 +231,21 @@ export function getRecommendedMissions(loc: Locality): Mission[] {
 }
 
 export const leaderboard = [
-  { rank: 1, name: "Aarav Krishnan", ward: "Indiranagar", points: 4820, badge: "Canopy Keeper" },
-  { rank: 2, name: "Priya Menon", ward: "Koramangala", points: 4310, badge: "Heat Defender" },
-  { rank: 3, name: "Rohan Bhatt", ward: "Jayanagar", points: 3920, badge: "Green Steward" },
-  { rank: 4, name: "Ananya Iyer", ward: "Indiranagar", points: 3640, badge: "Water Sentinel" },
-  { rank: 5, name: "Vikram Shah", ward: "HSR Layout", points: 3185, badge: "Climate Ranger" },
-  { rank: 6, name: "Meera Joshi", ward: "Whitefield", points: 2890, badge: "Community Guardian" },
-  { rank: 7, name: "Karthik Rao", ward: "Indiranagar", points: 2640, badge: "Green Steward" },
+  { rank: 1, name: "Aarav Krishnan", ward: "Ballygunge", points: 4820, badge: "Canopy Keeper" },
+  { rank: 2, name: "Priya Menon", ward: "Jadavpur", points: 4310, badge: "Heat Defender" },
+  { rank: 3, name: "Rohan Bhatt", ward: "Salt Lake", points: 3920, badge: "Green Steward" },
+  { rank: 4, name: "Ananya Iyer", ward: "Ballygunge", points: 3640, badge: "Water Sentinel" },
+  { rank: 5, name: "Vikram Shah", ward: "New Town", points: 3185, badge: "Climate Ranger" },
+  { rank: 6, name: "Meera Joshi", ward: "Park Street", points: 2890, badge: "Community Guardian" },
+  { rank: 7, name: "Karthik Rao", ward: "Ballygunge", points: 2640, badge: "Green Steward" },
 ];
 
 export const wards = [
-  { name: "Indiranagar", users: 1248, missions: 3420, trees: 842, points: 124800 },
-  { name: "Koramangala", users: 1102, missions: 2980, trees: 712, points: 108400 },
-  { name: "Jayanagar", users: 942, missions: 2640, trees: 604, points: 96200 },
-  { name: "HSR Layout", users: 820, missions: 2210, trees: 488, points: 81800 },
-  { name: "Whitefield", users: 768, missions: 1980, trees: 412, points: 72400 },
+  { name: "Ballygunge", users: 1248, missions: 3420, trees: 842, points: 124800 },
+  { name: "Jadavpur", users: 1102, missions: 2980, trees: 712, points: 108400 },
+  { name: "Salt Lake", users: 942, missions: 2640, trees: 604, points: 96200 },
+  { name: "New Town", users: 820, missions: 2210, trees: 488, points: 81800 },
+  { name: "Park Street", users: 768, missions: 1980, trees: 412, points: 72400 },
 ];
 
 // Climate Rankings with movement (positive = climbed N places)
@@ -258,27 +258,25 @@ export type Ranking = {
 };
 
 export const wardRankings: Ranking[] = [
-  { rank: 1, name: "Jayanagar", score: 72, movement: +1, trend: "up" },
-  { rank: 2, name: "Malleshwaram", score: 68, movement: +1, trend: "up" },
-  { rank: 3, name: "Koramangala", score: 61, movement: +2, trend: "up" },
-  { rank: 4, name: "Whitefield", score: 58, movement: 0, trend: "flat" },
-  { rank: 5, name: "Indiranagar", score: 54, movement: -1, trend: "down" },
-  { rank: 6, name: "HSR Layout", score: 48, movement: -2, trend: "down" },
+  { rank: 1, name: "Salt Lake", score: 72, movement: +1, trend: "up" },
+  { rank: 2, name: "Behala", score: 68, movement: +1, trend: "up" },
+  { rank: 3, name: "Jadavpur", score: 61, movement: +2, trend: "up" },
+  { rank: 4, name: "Park Street", score: 58, movement: 0, trend: "flat" },
+  { rank: 5, name: "Ballygunge", score: 54, movement: -1, trend: "down" },
+  { rank: 6, name: "New Town", score: 48, movement: -2, trend: "down" },
 ];
 
 export const municipalityRankings: Ranking[] = [
-  { rank: 1, name: "BBMP South Zone", score: 66, movement: +1, trend: "up" },
-  { rank: 2, name: "BBMP East Zone", score: 58, movement: 0, trend: "flat" },
-  { rank: 3, name: "BBMP Mahadevapura", score: 56, movement: +1, trend: "up" },
-  { rank: 4, name: "BBMP Bommanahalli", score: 51, movement: -2, trend: "down" },
+  { rank: 1, name: "KMC Borough VIII", score: 66, movement: +1, trend: "up" },
+  { rank: 2, name: "KMC Borough X", score: 58, movement: 0, trend: "flat" },
+  { rank: 3, name: "Bidhannagar Corporation", score: 56, movement: +1, trend: "up" },
+  { rank: 4, name: "NKDA", score: 51, movement: -2, trend: "down" },
 ];
 
 export const cityRankings: Ranking[] = [
   { rank: 1, name: "Pune", score: 71, movement: +2, trend: "up" },
   { rank: 2, name: "Chennai", score: 64, movement: 0, trend: "flat" },
-  { rank: 3, name: "Bengaluru", score: 58, movement: -1, trend: "down" },
+  { rank: 3, name: "Kolkata", score: 58, movement: -1, trend: "down" },
   { rank: 4, name: "Hyderabad", score: 55, movement: +1, trend: "up" },
   { rank: 5, name: "Delhi", score: 41, movement: 0, trend: "flat" },
 ];
-
-

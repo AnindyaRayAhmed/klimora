@@ -1,11 +1,11 @@
 import { localities as mockLocalities, type Locality } from '../ui-constants';
 
 const frontendLocalityMap: Record<string, Partial<Locality>> = {
-  'indiranagar': mockLocalities.find(l => l.id === 'indiranagar')!,
-  'koramangala': mockLocalities.find(l => l.id === 'koramangala')!,
-  'jayanagar': mockLocalities.find(l => l.id === 'jayanagar')!,
-  'hsr': mockLocalities.find(l => l.id === 'hsr')!,
-  'whitefield': mockLocalities.find(l => l.id === 'whitefield')!,
+  'ballygunge': mockLocalities.find(l => l.id === 'ballygunge')!,
+  'jadavpur': mockLocalities.find(l => l.id === 'jadavpur')!,
+  'salt-lake': mockLocalities.find(l => l.id === 'salt-lake')!,
+  'new-town': mockLocalities.find(l => l.id === 'new-town')!,
+  'park-street': mockLocalities.find(l => l.id === 'park-street')!,
 };
 
 export function adaptClimateScoreToLocality(localityRaw: any, scoreRaw: any): Locality {

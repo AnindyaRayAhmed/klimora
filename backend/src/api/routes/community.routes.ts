@@ -69,11 +69,11 @@ export async function registerCommunityRoutes(app: FastifyInstance): Promise<voi
 
         // Merge with high-quality mock fallback if there are not enough seeded/real users
         const mockUsers = [
-          { rank: 1, name: "Aditya Sharma", ward: "Jayanagar", badge: "Canopy Champion", points: 1250 },
-          { rank: 2, name: "Priya Nair", ward: "Indiranagar", badge: "Green Advocate", points: 980 },
-          { rank: 3, name: "Rohan Das", ward: "Koramangala", badge: "Civic Guard", points: 840 },
-          { rank: 4, name: "Meera Sen", ward: "HSR Layout", badge: "Eco Warrior", points: 720 },
-          { rank: 5, name: "Karan Malhotra", ward: "Whitefield", badge: "Lake Protector", points: 650 }
+          { rank: 1, name: "Aditya Sharma", ward: "Salt Lake", badge: "Canopy Champion", points: 1250 },
+          { rank: 2, name: "Priya Nair", ward: "Ballygunge", badge: "Green Advocate", points: 980 },
+          { rank: 3, name: "Rohan Das", ward: "Jadavpur", badge: "Civic Guard", points: 840 },
+          { rank: 4, name: "Meera Sen", ward: "New Town", badge: "Eco Warrior", points: 720 },
+          { rank: 5, name: "Karan Malhotra", ward: "Park Street", badge: "Lake Protector", points: 650 }
         ];
 
         while (users.length < 5) {
@@ -97,18 +97,18 @@ export async function registerCommunityRoutes(app: FastifyInstance): Promise<voi
         return {
           data: {
             users: [
-              { rank: 1, name: "Aditya Sharma", ward: "Jayanagar", badge: "Canopy Champion", points: 1250 },
-              { rank: 2, name: "Priya Nair", ward: "Indiranagar", badge: "Green Advocate", points: 980 },
-              { rank: 3, name: "Rohan Das", ward: "Koramangala", badge: "Civic Guard", points: 840 },
-              { rank: 4, name: "Meera Sen", ward: "HSR Layout", badge: "Eco Warrior", points: 720 },
-              { rank: 5, name: "Karan Malhotra", ward: "Whitefield", badge: "Lake Protector", points: 650 }
+              { rank: 1, name: "Aditya Sharma", ward: "Salt Lake", badge: "Canopy Champion", points: 1250 },
+              { rank: 2, name: "Priya Nair", ward: "Ballygunge", badge: "Green Advocate", points: 980 },
+              { rank: 3, name: "Rohan Das", ward: "Jadavpur", badge: "Civic Guard", points: 840 },
+              { rank: 4, name: "Meera Sen", ward: "New Town", badge: "Eco Warrior", points: 720 },
+              { rank: 5, name: "Karan Malhotra", ward: "Park Street", badge: "Lake Protector", points: 650 }
             ],
             wards: [
-              { rank: 1, id: "jayanagar", name: "Jayanagar", score: 72, trend: "up", movement: 1 },
-              { rank: 2, id: "koramangala", name: "Koramangala", score: 61, trend: "up", movement: 1 },
-              { rank: 3, id: "whitefield", name: "Whitefield", score: 58, trend: "flat", movement: 0 },
-              { rank: 4, id: "indiranagar", name: "Indiranagar", score: 54, trend: "down", movement: -2 },
-              { rank: 5, id: "hsr", name: "HSR Layout", score: 48, trend: "down", movement: -1 }
+              { rank: 1, id: "salt-lake", name: "Salt Lake", score: 72, trend: "up", movement: 1 },
+              { rank: 2, id: "jadavpur", name: "Jadavpur", score: 61, trend: "up", movement: 1 },
+              { rank: 3, id: "park-street", name: "Park Street", score: 58, trend: "flat", movement: 0 },
+              { rank: 4, id: "ballygunge", name: "Ballygunge", score: 54, trend: "down", movement: -2 },
+              { rank: 5, id: "new-town", name: "New Town", score: 48, trend: "down", movement: -1 }
             ]
           }
         };

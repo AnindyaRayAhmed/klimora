@@ -45,11 +45,11 @@ export class ResponseSynthesisService {
     const behavioralTone = this.getBehavioralTone(context.behaviorProfile);
 
     const city = context.dynamicLocation?.city || "Unknown Location";
-    const temp = context.climateScore?.metrics?.temperatureC ?? context.climateScore?.temperatureC ?? "N/A";
+    const temp = context.climateScore?.metrics?.temperatureC ?? context.climateScore?.temperatureC ?? context.climateScore?.metrics?.temperature ?? context.climateScore?.temperature ?? "N/A";
     const aqi = context.climateScore?.metrics?.aqi ?? context.climateScore?.aqi ?? "N/A";
     const ndvi = context.freshNdvi?.value ?? context.climateScore?.metrics?.ndvi ?? context.climateScore?.ndvi ?? "N/A";
-    const rainfall = context.climateScore?.metrics?.rainfallMm ?? context.climateScore?.rainfallMm ?? "N/A";
-    const climateScoreVal = context.climateScore?.score ?? "N/A";
+    const rainfall = context.climateScore?.metrics?.rainfallMm ?? context.climateScore?.rainfallMm ?? context.climateScore?.metrics?.rainfall ?? context.climateScore?.rainfall ?? "N/A";
+    const climateScoreVal = context.climateScore?.score ?? context.climateScore?.climateScore ?? "N/A";
 
     const prompt = `
 ${ritPrompts.systemPersona}

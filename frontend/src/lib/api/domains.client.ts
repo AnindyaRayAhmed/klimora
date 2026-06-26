@@ -26,11 +26,14 @@ export const ritClient = {
     lat?: number, 
     lng?: number,
     climateMetrics?: {
+      temperature?: number | null;
       temperatureC?: number | null;
       aqi?: number | null;
       ndvi?: number | null;
+      rainfall?: number | null;
       rainfallMm?: number | null;
       score?: number | null;
+      climateScore?: number | null;
     }
   ) => 
     apiClient<any>(`/rit/chat`, {

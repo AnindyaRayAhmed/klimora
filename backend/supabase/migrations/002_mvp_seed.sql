@@ -2,12 +2,13 @@
 
 insert into public.localities (id, slug, name, city, state, country, latitude, longitude, description)
 values
-  ('11111111-1111-4111-8111-111111111111', 'indiranagar', 'Indiranagar', 'Bengaluru', 'Karnataka', 'India', 12.971600, 77.641100, 'Dense built-up ward with active heat-island and canopy-loss signals.'),
-  ('22222222-2222-4222-8222-222222222222', 'koramangala', 'Koramangala', 'Bengaluru', 'Karnataka', 'India', 12.935200, 77.624500, 'Mixed-use ward with moderate vegetation and restoration opportunities.'),
-  ('33333333-3333-4333-8333-333333333333', 'jayanagar', 'Jayanagar', 'Bengaluru', 'Karnataka', 'India', 12.929300, 77.582500, 'Older green locality with stronger canopy and lower heat stress.'),
-  ('44444444-4444-4444-8444-444444444444', 'hsr', 'HSR Layout', 'Bengaluru', 'Karnataka', 'India', 12.911600, 77.647300, 'Rapidly urbanising locality with high heat and water-stress signals.'),
-  ('55555555-5555-4555-8555-555555555555', 'whitefield', 'Whitefield', 'Bengaluru', 'Karnataka', 'India', 12.969800, 77.749900, 'Tech corridor locality with construction-driven heat and lake restoration context.')
-on conflict (slug) do update set
+  ('11111111-1111-4111-8111-111111111111', 'ballygunge', 'Ballygunge', 'Kolkata', 'West Bengal', 'India', 22.527300, 88.366400, 'Dense commercial and residential ward with mature avenue trees and active canopy maintenance.'),
+  ('22222222-2222-4222-8222-222222222222', 'jadavpur', 'Jadavpur', 'Kolkata', 'West Bengal', 'India', 22.499400, 88.369700, 'Mixed-use institutional and residential area with moderate canopy and urban heat signals.'),
+  ('33333333-3333-4333-8333-333333333333', 'salt-lake', 'Salt Lake', 'Kolkata', 'West Bengal', 'India', 22.580400, 88.418100, 'Planned sector with parks, wide avenues, and moderate surface temperature signals.'),
+  ('44444444-4444-4444-8444-444444444444', 'new-town', 'New Town', 'Kolkata', 'West Bengal', 'India', 22.579400, 88.459400, 'Rapidly expanding IT and residential corridor with high construction-driven heat stress.'),
+  ('55555555-5555-4555-8555-555555555555', 'park-street', 'Park Street', 'Kolkata', 'West Bengal', 'India', 22.548400, 88.356200, 'Dense urban ward with historical avenues, commercial traffic, and high heat-island footprint.')
+on conflict (id) do update set
+  slug = excluded.slug,
   name = excluded.name,
   city = excluded.city,
   state = excluded.state,

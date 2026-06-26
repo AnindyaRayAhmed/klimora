@@ -172,11 +172,14 @@ function RitPage() {
 
   const send = (text: string) => {
     const climateMetrics = activeLocalityData ? {
+      temperature: activeLocalityData.temperature?.value ?? null,
       temperatureC: activeLocalityData.temperature?.value ?? null,
       aqi: activeLocalityData.airQuality?.aqi ?? null,
       ndvi: activeLocalityData.vegetation?.ndvi ?? null,
+      rainfall: activeLocalityData.rainfall?.mm ?? null,
       rainfallMm: activeLocalityData.rainfall?.mm ?? null,
       score: activeLocalityData.climateScore ?? null,
+      climateScore: activeLocalityData.climateScore ?? null,
     } : undefined;
 
     sendMessage(text, climateMetrics);
@@ -203,22 +206,6 @@ function RitPage() {
                 Context: <span className="text-foreground font-medium truncate">{locationName}</span>
               </div>
             </div>
-            <select
-              value={selectedLocalityId || ""}
-              onChange={(e) => setSelectedLocalityId(e.target.value || null)}
-              className="glass rounded-lg text-xs px-2 py-1.5 bg-transparent outline-none"
-              aria-label="Switch locality"
-            >
-              {!selectedLocalityId && (
-                <option value="" className="bg-background">Select a location...</option>
-              )}
-              {selectedLocalityId === "dynamic" && (
-                <option value="dynamic" className="bg-background">Dynamic Location</option>
-              )}
-              {localitiesRaw.map((l) => (
-                <option key={l.id} value={l.id} className="bg-background">{l.name}</option>
-              ))}
-            </select>
           </header>
 
           <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 md:px-6 py-6 space-y-5">
