@@ -44,6 +44,12 @@ export class ResponseSynthesisService {
     const compressedContext = this.compressContext(factualContext);
     const behavioralTone = this.getBehavioralTone(context.behaviorProfile);
 
+    const city = context.dynamicLocation?.city || "Unknown Location";
+    const temp = context.climateScore?.metrics?.temperatureC ?? "N/A";
+    const aqi = context.climateScore?.metrics?.aqi ?? "N/A";
+    const ndvi = context.freshNdvi?.value ?? context.climateScore?.metrics?.ndvi ?? "N/A";
+    const climateScoreVal = context.climateScore?.score ?? "N/A";
+
     const prompt = `
 ${ritPrompts.systemPersona}
 
@@ -57,6 +63,13 @@ ${intent}
 === RECENT CONVERSATION HISTORY ===
 ${memoryContext}
 
+=== ACTIVE LOCATION & CLIMATE METRICS ===
+Location: ${city}
+Temperature: ${temp}°C
+AQI: ${aqi}
+NDVI: ${ndvi}
+Climate Score: ${climateScoreVal}/100
+
 === FACTUAL CLIMATE & MISSION CONTEXT ===
 ${compressedContext || "No specific factual context needed for this query."}
 
@@ -66,7 +79,7 @@ ${message}
 === INSTRUCTION ===
 Synthesize a natural, unified, conversational response to the user's query.
 Do NOT mention internal agents (like 'Agent A says...').
-Use the factual context provided to answer accurately.
+Use the active location and climate metrics, as well as factual context provided, to answer accurately and reason about the environment.
 Do not hallucinate data. If data is missing, admit you don't have it.
     `;
 

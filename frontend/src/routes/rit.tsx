@@ -23,12 +23,131 @@ export const Route = createFileRoute("/rit")({
 });
 
 
-function renderInline(text: string) {
-  return text.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
-    part.startsWith("**") && part.endsWith("**")
-      ? <strong key={i} className="text-primary">{part.slice(2, -2)}</strong>
-      : <span key={i}>{part}</span>
-  );
+function parseInline(text: string): React.ReactNode[] {
+  const regex = /(\*\*[^*]+\*\*|\*[^*]+\*|_[^_]+_|`[^`]+`)/g;
+  const parts = text.split(regex);
+  return parts.map((part, index) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return <strong key={index} className="font-bold text-primary">{part.slice(2, -2)}</strong>;
+    }
+    if ((part.startsWith("*") && part.endsWith("*")) || (part.startsWith("_") && part.endsWith("_"))) {
+      return <em key={index} className="italic text-muted-foreground">{part.slice(1, -1)}</em>;
+    }
+    if (part.startsWith("`") && part.endsWith("`")) {
+      return <code key={index} className="px-1.5 py-0.5 rounded bg-muted font-mono text-xs text-foreground/90">{part.slice(1, -1)}</code>;
+    }
+    return part;
+  });
+}
+
+function renderMarkdown(content: string): React.ReactNode {
+  const lines = content.split("\n");
+  const elements: React.ReactNode[] = [];
+  
+  let currentList: { type: "ul" | "ol"; items: string[] } | null = null;
+  
+  const flushList = (key: number) => {
+    if (!currentList) return null;
+    const listKey = `list-${key}`;
+    const listItems = currentList.items.map((item, idx) => (
+      <li key={idx} className="ml-5 list-disc leading-relaxed mb-1 text-foreground/90">
+        {parseInline(item)}
+      </li>
+    ));
+    const list = currentList.type === "ul" ? (
+      <ul key={listKey} className="list-inside space-y-1 my-3">
+        {listItems}
+      </ul>
+    ) : (
+      <ol key={listKey} className="list-decimal list-inside space-y-1 my-3">
+        {listItems}
+      </ol>
+    );
+    currentList = null;
+    return list;
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    if (!trimmed) {
+      if (currentList) {
+        elements.push(flushList(i));
+      }
+      continue;
+    }
+
+    if (trimmed.startsWith("### ")) {
+      if (currentList) elements.push(flushList(i));
+      elements.push(
+        <h4 key={i} className="text-sm font-bold mt-4 mb-2 text-foreground flex items-center gap-1">
+          {parseInline(trimmed.slice(4))}
+        </h4>
+      );
+      continue;
+    }
+    if (trimmed.startsWith("## ")) {
+      if (currentList) elements.push(flushList(i));
+      elements.push(
+        <h3 key={i} className="text-base font-bold mt-5 mb-3 text-foreground border-b border-border/40 pb-1">
+          {parseInline(trimmed.slice(3))}
+        </h3>
+      );
+      continue;
+    }
+    if (trimmed.startsWith("# ")) {
+      if (currentList) elements.push(flushList(i));
+      elements.push(
+        <h2 key={i} className="text-lg font-bold mt-6 mb-3 text-foreground">
+          {parseInline(trimmed.slice(2))}
+        </h2>
+      );
+      continue;
+    }
+
+    const ulMatch = trimmed.match(/^[-*+]\s+(.*)/);
+    if (ulMatch) {
+      const itemContent = ulMatch[1];
+      if (currentList && currentList.type === "ol") {
+        elements.push(flushList(i));
+      }
+      if (!currentList) {
+        currentList = { type: "ul", items: [] };
+      }
+      currentList.items.push(itemContent);
+      continue;
+    }
+
+    const olMatch = trimmed.match(/^(\d+)\.\s+(.*)/);
+    if (olMatch) {
+      const itemContent = olMatch[2];
+      if (currentList && currentList.type === "ul") {
+        elements.push(flushList(i));
+      }
+      if (!currentList) {
+        currentList = { type: "ol", items: [] };
+      }
+      currentList.items.push(itemContent);
+      continue;
+    }
+
+    if (currentList) {
+      elements.push(flushList(i));
+    }
+    
+    elements.push(
+      <p key={i} className="my-2 text-foreground/90 leading-relaxed">
+        {parseInline(line)}
+      </p>
+    );
+  }
+
+  if (currentList) {
+    elements.push(flushList(lines.length));
+  }
+
+  return <div className="space-y-2">{elements}</div>;
 }
 
 function RitPage() {
@@ -108,7 +227,7 @@ function RitPage() {
                       {m.content}
                     </div>
                   ) : (
-                    <div className="text-sm leading-relaxed whitespace-pre-wrap">{renderInline(m.content)}</div>
+                    <div className="text-sm leading-relaxed">{renderMarkdown(m.content)}</div>
                   )}
                 </div>
               </div>
