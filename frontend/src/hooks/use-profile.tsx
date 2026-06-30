@@ -292,5 +292,61 @@ export function useProfile() {
     return () => clearInterval(interval);
   }, [user, authLoading]);
 
-  return { profile, missionHistory, verificationQueue, loading };
+  const updateProfile = async (fullName: string, locationName: string) => {
+    try {
+      const isDummy = import.meta.env.VITE_SUPABASE_ANON_KEY === 'dummy_anon_key' || !import.meta.env.VITE_SUPABASE_URL;
+      if (isDummy) {
+        setProfile((prev: any) => ({ ...prev, fullName, location: locationName }));
+        console.log("[Mock Profile Update] Saved successfully:", { fullName, locationName });
+        return;
+      }
+      
+      // Look up locality ID by name or slug
+      const { data: locData } = await supabase
+        .from('localities')
+        .select('id')
+        .ilike('name', `%${locationName}%`)
+        .limit(1);
+
+      const localityId = locData && locData.length > 0 ? locData[0].id : null;
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({ 
+          full_name: fullName,
+          ...(localityId ? { home_locality_id: localityId } : {})
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+      
+      setProfile((prev: any) => ({ 
+        ...prev, 
+        fullName, 
+        location: localityId ? locationName : prev.location 
+      }));
+      console.log("[Profile Update] Profile updated successfully in Supabase:", { fullName, locationName, localityId });
+    } catch (err) {
+      console.error("[Profile Update] Error updating profile:", err);
+      throw err;
+    }
+  };
+
+  const deleteAccount = async () => {
+    console.log("[Account Deletion] Triggering account deletion for user ID:", user?.id);
+    try {
+      const isDummy = import.meta.env.VITE_SUPABASE_ANON_KEY === 'dummy_anon_key' || !import.meta.env.VITE_SUPABASE_URL;
+      if (!isDummy && user) {
+        await supabase.from('profiles').delete().eq('id', user.id);
+      }
+      localStorage.removeItem('klimora_mock_session');
+      await supabase.auth.signOut();
+      window.location.href = '/login';
+    } catch (err) {
+      console.error("Account deletion error:", err);
+      throw err;
+    }
+  };
+
+  return { profile, missionHistory, verificationQueue, loading, updateProfile, deleteAccount };
 }

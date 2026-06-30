@@ -1,6 +1,7 @@
 import { Outlet, Link, createRootRoute } from "@tanstack/react-router";
 
 import { AppNav } from "@/components/AppNav";
+import { Header } from "@/components/Header";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/hooks/use-auth";
 
@@ -77,9 +78,12 @@ export const Route = createRootRoute({
 function RootComponent() {
   return (
     <AuthProvider>
-      <div className="min-h-screen md:pl-[72px] pb-[68px] md:pb-0">
+      <div className="min-h-screen md:pl-[72px] pb-[68px] md:pb-0 pt-[76px] flex flex-col">
+        <Header />
         <AppNav />
-        <Outlet />
+        <div className="flex-1 flex flex-col min-h-0">
+          <Outlet />
+        </div>
       </div>
       <Toaster />
     </AuthProvider>

@@ -1,8 +1,20 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { MapPin, Award, TrendingUp, Calendar, Settings, CheckCircle2, Shield, Trees, Droplets, Flame, Leaf, Users, ShieldCheck } from "lucide-react";
 import { useProfile } from "@/hooks/use-profile";
 import { VerificationBadge, VerifiedByChip } from "@/components/VerificationBadge";
 import { VerificationDetails } from "@/components/VerificationDetails";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -15,7 +27,6 @@ export const Route = createFileRoute("/profile")({
 });
 
 import { useAuth } from "@/hooks/use-auth";
-import { Navigate } from "@tanstack/react-router";
 
 const titleIcons: Record<string, typeof Trees> = {
   "Canopy Keeper": Trees,
@@ -27,16 +38,30 @@ const titleIcons: Record<string, typeof Trees> = {
 };
 
 function ProfilePage() {
-  const { user, isLoading } = useAuth();
-  const { profile: u, missionHistory, verificationQueue, loading } = useProfile();
+  const { user, isLoading, signOut } = useAuth();
+  const { profile: u, missionHistory, verificationQueue, loading, updateProfile, deleteAccount } = useProfile();
   
-  if (isLoading || loading) return <div className="min-h-screen flex items-center justify-center">Loading profile...</div>;
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [displayName, setDisplayName] = useState("");
+  const [locName, setLocName] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleOpenSettings = () => {
+    if (u) {
+      setDisplayName(u.fullName || "");
+      setLocName(u.location || "");
+    }
+    setIsSettingsOpen(true);
+  };
+
+  if (isLoading || loading) return <div className="min-h-screen flex items-center justify-center bg-background">Loading profile...</div>;
 
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  if (!u) return <div className="min-h-screen flex items-center justify-center">Loading profile...</div>;
+  if (!u) return <div className="min-h-screen flex items-center justify-center bg-background">Loading profile...</div>;
 
   const progress = u.nextLevelAt ? ((u.points || 0) / u.nextLevelAt) * 100 : 0;
 
@@ -73,7 +98,10 @@ function ProfilePage() {
               </div>
             </div>
 
-            <button className="self-start md:self-center h-10 w-10 rounded-xl glass flex items-center justify-center hover:bg-primary/10">
+            <button 
+              onClick={handleOpenSettings}
+              className="self-start md:self-center h-10 w-10 rounded-xl glass flex items-center justify-center hover:bg-primary/10 transition-colors"
+            >
               <Settings className="h-4 w-4" />
             </button>
           </div>
@@ -210,6 +238,113 @@ function ProfilePage() {
           </div>
         </section>
       </div>
+
+      <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+        <DialogContent className="sm:max-w-[425px] bg-card text-foreground border-border rounded-2xl p-6 shadow-glow">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Settings className="h-5 w-5 text-primary" /> Account Settings
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground text-xs">
+              Manage your personal info, locality preferences, and account security.
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Form */}
+          <div className="space-y-4 py-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="displayName" className="text-xs font-semibold text-muted-foreground">Display Name</Label>
+              <Input
+                id="displayName"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="Enter display name"
+                className="bg-background border-border text-foreground"
+              />
+            </div>
+            
+            <div className="space-y-1.5">
+              <Label htmlFor="location" className="text-xs font-semibold text-muted-foreground">Locality / Location</Label>
+              <Input
+                id="location"
+                value={locName}
+                onChange={(e) => setLocName(e.target.value)}
+                placeholder="Enter locality (e.g. Ballygunge)"
+                className="bg-background border-border text-foreground"
+              />
+              <span className="text-[10px] text-muted-foreground block leading-tight">
+                Supported database locations: Ballygunge, Jadavpur, Salt Lake, New Town, Park Street
+              </span>
+            </div>
+
+            <Button 
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/95 mt-2"
+              disabled={isSaving}
+              onClick={async () => {
+                setIsSaving(true);
+                try {
+                  await updateProfile(displayName, locName);
+                  toast.success("Profile updated successfully");
+                  setIsSettingsOpen(false);
+                } catch (e) {
+                  toast.error("Failed to update profile");
+                } finally {
+                  setIsSaving(false);
+                }
+              }}
+            >
+              {isSaving ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
+
+          <hr className="border-border/60" />
+
+          {/* Authentication */}
+          <div className="py-2">
+            <Label className="text-xs font-semibold text-muted-foreground block mb-2">Session</Label>
+            <Button 
+              variant="outline" 
+              className="w-full border-border hover:bg-muted"
+              onClick={async () => {
+                await signOut();
+                toast.success("Logged out successfully");
+              }}
+            >
+              Log Out
+            </Button>
+          </div>
+
+          <hr className="border-border/60" />
+
+          {/* Danger Zone */}
+          <div className="py-2 border border-destructive/20 bg-destructive/5 rounded-xl p-4">
+            <h4 className="text-xs font-bold text-destructive uppercase tracking-wider mb-1">Danger Zone</h4>
+            <p className="text-[10px] text-muted-foreground mb-3 leading-normal">
+              Permanently delete your account and all associated environmental data. This action is irreversible.
+            </p>
+            <Button 
+              variant="destructive" 
+              className="w-full"
+              disabled={isDeleting}
+              onClick={async () => {
+                if (window.confirm("Are you absolutely sure you want to delete your account? This action is irreversible.")) {
+                  setIsDeleting(true);
+                  try {
+                    await deleteAccount();
+                    toast.success("Account deleted");
+                  } catch (e) {
+                    toast.error("Failed to delete account");
+                  } finally {
+                    setIsDeleting(false);
+                  }
+                }
+              }}
+            >
+              {isDeleting ? "Deleting..." : "Delete Account"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

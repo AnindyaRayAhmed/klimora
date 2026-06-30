@@ -205,10 +205,10 @@ function RitPage() {
   };
 
   return (
-    <div className="min-h-screen px-4 md:px-8 py-6 md:py-8">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6">
+    <div className="flex-1 flex flex-col min-h-0 px-4 md:px-8 py-6">
+      <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 flex-1 min-h-0">
         {/* Chat */}
-        <div className="glass-strong rounded-2xl flex flex-col h-[calc(100vh-7rem)] md:h-[calc(100vh-4rem)] overflow-hidden">
+        <div className="glass-strong rounded-2xl flex flex-col h-[calc(100vh-190px)] md:h-[calc(100vh-140px)] overflow-hidden">
           <header className="px-5 py-4 border-b border-border/60 flex items-center gap-3">
             <div className="relative h-10 w-10 rounded-xl flex items-center justify-center" style={{ background: "var(--gradient-aurora)" }}>
               <Sparkles className="h-5 w-5 text-white" />
