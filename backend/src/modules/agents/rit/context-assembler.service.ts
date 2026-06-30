@@ -17,9 +17,10 @@ export class ContextAssemblerService {
     packet.behaviorProfile = await this.ritTools.inferBehaviorProfile(query.userId);
 
     if (query.climateMetrics) {
-      const tempVal = query.climateMetrics.temperatureC ?? query.climateMetrics.temperature ?? null;
-      const rainfallVal = query.climateMetrics.rainfallMm ?? query.climateMetrics.rainfall ?? null;
-      const scoreVal = query.climateMetrics.score ?? query.climateMetrics.climateScore ?? null;
+      const metrics = query.climateMetrics as any;
+      const tempVal = metrics.temperatureC ?? metrics.temperature ?? null;
+      const rainfallVal = metrics.rainfallMm ?? metrics.rainfall ?? null;
+      const scoreVal = metrics.score ?? metrics.climateScore ?? null;
 
       packet.climateScore = {
         score: scoreVal,

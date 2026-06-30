@@ -19,10 +19,13 @@ export interface RitQuery {
   lng?: number;
   climateMetrics?: {
     temperatureC?: number | null;
+    temperature?: number | null;
     aqi?: number | null;
     ndvi?: number | null;
     rainfallMm?: number | null;
+    rainfall?: number | null;
     score?: number | null;
+    climateScore?: number | null;
   };
 }
 
