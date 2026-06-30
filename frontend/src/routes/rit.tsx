@@ -175,7 +175,8 @@ function RitPage() {
   if (!user) return <Navigate to="/login" replace />;
 
   const { selectedLocalityId, setSelectedLocalityId } = useAppStore();
-  const { localitiesRaw, localitiesWithPins, activeLocalityData } = useDashboardIntelligence();
+  const { localitiesRaw, localitiesWithPins, activeLocalityData, loadingInitial, isHydratingScore } = useDashboardIntelligence();
+  const isLocalDataLoading = loadingInitial || isHydratingScore;
   const { messages, thinking, sendMessage, insights } = useRitChat();
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -260,7 +261,7 @@ function RitPage() {
             )}
           </div>
 
-          {messages.length <= 1 && (
+          {messages.length <= 1 && !isLocalDataLoading && (
             <div className="px-4 md:px-6 pb-3 flex flex-wrap gap-2">
               {["Why is this area hotter?", "What actions would help this locality most?", "What is my climate score?"].map((p) => (
                 <button
@@ -283,11 +284,16 @@ function RitPage() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(input); } }}
-                placeholder={`Ask Rit about ${locationName}…`}
+                placeholder={isLocalDataLoading ? "Analyzing local environment..." : `Ask Rit about ${locationName}…`}
+                disabled={isLocalDataLoading}
                 rows={1}
-                className="flex-1 bg-transparent outline-none px-2 py-2 text-sm resize-none max-h-32"
+                className="flex-1 bg-transparent outline-none px-2 py-2 text-sm resize-none max-h-32 disabled:opacity-50"
               />
-              <button type="submit" disabled={!input.trim()} className="h-9 w-9 rounded-lg bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40 hover:opacity-90 transition-opacity">
+              <button 
+                type="submit" 
+                disabled={!input.trim() || isLocalDataLoading} 
+                className="h-9 w-9 rounded-lg bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40 hover:opacity-90 transition-opacity"
+              >
                 <Send className="h-4 w-4" />
               </button>
             </form>
