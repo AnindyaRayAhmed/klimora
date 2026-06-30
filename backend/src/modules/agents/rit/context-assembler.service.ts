@@ -67,6 +67,29 @@ export class ContextAssemblerService {
         console.log("[Rit Debug] using coordinate-native context");
         packet.dynamicLocation = { lat, lng: lon, city };
         
+        // Ensure that dynamic coordinate-native requests explicitly adopt the incoming metrics
+        if (query.climateMetrics) {
+          const metrics = query.climateMetrics as any;
+          const tempVal = metrics.temperature ?? metrics.temperatureC ?? null;
+          const rainVal = metrics.rainfall ?? metrics.rainfallMm ?? null;
+          const scoreVal = metrics.climateScore ?? metrics.score ?? null;
+
+          packet.climateScore = {
+            score: scoreVal,
+            metrics: {
+              temperatureC: tempVal,
+              aqi: metrics.aqi ?? null,
+              ndvi: metrics.ndvi ?? null,
+              rainfallMm: rainVal,
+            }
+          };
+          packet.freshNdvi = {
+            value: metrics.ndvi ?? null,
+            source: "coordinate_native_injected"
+          };
+          console.log("[Rit Debug] Injected coordinate-native climateMetrics to context");
+        }
+        
         // Save geocoded city context to the conversation in DB
         await this.memoryService.updateConversationCity(conversationId, city);
       } catch (e) {

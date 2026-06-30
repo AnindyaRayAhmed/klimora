@@ -31,13 +31,31 @@ function parseInline(text: string): React.ReactNode[] {
       return <strong key={index} className="font-bold text-primary">{part.slice(2, -2)}</strong>;
     }
     if ((part.startsWith("*") && part.endsWith("*")) || (part.startsWith("_") && part.endsWith("_"))) {
-      return <em key={index} className="italic text-muted-foreground">{part.slice(1, -1)}</em>;
+      return <em key={index} className="italic text-foreground/90 font-medium">{part.slice(1, -1)}</em>;
     }
     if (part.startsWith("`") && part.endsWith("`")) {
       return <code key={index} className="px-1.5 py-0.5 rounded bg-muted font-mono text-xs text-foreground/90">{part.slice(1, -1)}</code>;
     }
     return part;
   });
+}
+
+function getSafeNumber(field: any, nestedKey: string): number | null {
+  if (field === null || field === undefined) return null;
+  if (typeof field === "number") return field;
+  if (typeof field === "string") {
+    const parsed = parseFloat(field);
+    return isNaN(parsed) ? null : parsed;
+  }
+  if (typeof field === "object" && field[nestedKey] !== undefined) {
+    const val = field[nestedKey];
+    if (typeof val === "number") return val;
+    if (typeof val === "string") {
+      const parsed = parseFloat(val);
+      return isNaN(parsed) ? null : parsed;
+    }
+  }
+  return null;
 }
 
 function renderMarkdown(content: string): React.ReactNode {
@@ -172,14 +190,14 @@ function RitPage() {
 
   const send = (text: string) => {
     const climateMetrics = activeLocalityData ? {
-      temperature: activeLocalityData.temperature?.value ?? null,
-      temperatureC: activeLocalityData.temperature?.value ?? null,
-      aqi: activeLocalityData.airQuality?.aqi ?? null,
-      ndvi: activeLocalityData.vegetation?.ndvi ?? null,
-      rainfall: activeLocalityData.rainfall?.mm ?? null,
-      rainfallMm: activeLocalityData.rainfall?.mm ?? null,
-      score: activeLocalityData.climateScore ?? null,
-      climateScore: activeLocalityData.climateScore ?? null,
+      temperature: getSafeNumber(activeLocalityData.temperature, 'value'),
+      temperatureC: getSafeNumber(activeLocalityData.temperature, 'value'),
+      aqi: getSafeNumber(activeLocalityData.airQuality, 'aqi'),
+      ndvi: getSafeNumber(activeLocalityData.vegetation, 'ndvi'),
+      rainfall: getSafeNumber(activeLocalityData.rainfall, 'mm'),
+      rainfallMm: getSafeNumber(activeLocalityData.rainfall, 'mm'),
+      score: getSafeNumber(activeLocalityData.climateScore, 'score') ?? getSafeNumber(activeLocalityData, 'climateScore'),
+      climateScore: getSafeNumber(activeLocalityData.climateScore, 'score') ?? getSafeNumber(activeLocalityData, 'climateScore'),
     } : undefined;
 
     sendMessage(text, climateMetrics);
@@ -303,10 +321,10 @@ function RitPage() {
             <div className="text-sm font-semibold mb-3">{locationName}</div>
             <div className="grid grid-cols-2 gap-2">
               {[
-                { icon: Thermometer, label: "Temp", value: activeLocalityData ? `${activeLocalityData.temperature.value}°C` : "--", token: "heat" },
-                { icon: Wind, label: "AQI", value: activeLocalityData ? activeLocalityData.airQuality.aqi : "--", token: "aqi" },
-                { icon: Trees, label: "NDVI", value: activeLocalityData ? activeLocalityData.vegetation.ndvi.toFixed(2) : "--", token: "vegetation" },
-                { icon: CloudRain, label: "Rain", value: activeLocalityData ? `${activeLocalityData.rainfall.mm}mm` : "--", token: "rainfall" },
+                { icon: Thermometer, label: "Temp", value: activeLocalityData ? `${getSafeNumber(activeLocalityData.temperature, 'value') ?? '--'}°C` : "--", token: "heat" },
+                { icon: Wind, label: "AQI", value: activeLocalityData ? (getSafeNumber(activeLocalityData.airQuality, 'aqi') ?? '--') : "--", token: "aqi" },
+                { icon: Trees, label: "NDVI", value: activeLocalityData ? (getSafeNumber(activeLocalityData.vegetation, 'ndvi')?.toFixed(2) ?? '--') : "--", token: "vegetation" },
+                { icon: CloudRain, label: "Rain", value: activeLocalityData ? `${getSafeNumber(activeLocalityData.rainfall, 'mm') ?? '--'}mm` : "--", token: "rainfall" },
               ].map(({ icon: Icon, label, value, token }) => (
                 <div key={label} className="glass rounded-lg p-2.5">
                   <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
